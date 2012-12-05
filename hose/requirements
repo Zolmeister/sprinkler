@@ -1,2 +1,6 @@
 argparse==1.2.1
+paramiko==1.9.0
+pika==0.9.8
+pycrypto==2.6
+uuid==1.30
 wsgiref==0.1.2
