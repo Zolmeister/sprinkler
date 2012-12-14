@@ -8,7 +8,6 @@ var express = require('express'),
     http = require('http'),
     path = require('path'),
     cons = require('consolidate'),
-    rabbit = require('rabbit.js').createContext(),
     uuid = require('node-uuid')
 
     var app = express()
@@ -58,30 +57,26 @@ function respQueue(uuid, data) {
         queue[uuid](data)
         queue[uuid] = undefined
     }
+
 }
-
-rabbit.on('ready', function() {
-    pub = rabbit.socket('PUB')
-    sub = rabbit.socket('SUB')
-    sub.pipe(process.stdout)
-    sub.connect('reply_queue')
-    sub.setEncoding('utf8')
-    sub.on('data', function(data) {
-        var data = JSON.parse(data)
-        console.log("got data: "+data)
-        respQueue(data.uuid, data.resp)
-    });
-    pub.connect('request_queue')
-})
-
 http.createServer(app).listen(app.get('port'), function() {
     console.log("Express server listening on port " + app.get('port'))
 })
-setTimeout(function(){
-console.log("writing to pub")
- pub.write(JSON.stringify({
-        uuid: uuid.v4(),
-        req: "test"
-    }), 'utf8')
+var amqp = require('amqp');
 
-},2000)
+var connection = amqp.createConnection();
+
+// Wait for connection to become established.
+connection.on('ready', function () {
+  // Use the default 'amq.topic' exchange
+  connection.queue('my-queue', function(q){
+      // Catch all messages
+      q.bind('#');
+      connection.publish("request_queue",{a:'a'})
+      // Receive messages
+      q.subscribe(function (message) {
+        // Print messages to stdout
+        console.log(message);
+      });
+  });
+});
