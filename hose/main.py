@@ -60,10 +60,13 @@ class Client:
 clients = []
 
 # Yay for event loops!
+from head_connection import Connector
+con = Connector()
 while 1:
     # Update the clients
     for c in clients:
         c.update()
 
     # Go check for the head
+    print con.recieve()
     pass

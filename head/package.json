@@ -9,7 +9,7 @@
     "express": "3.0.0rc4",
     "consolidate": "*",
     "dustjs-linkedin": "*",
-    "rabbit.js" : "*",
-    "node-uuid" : "*"
+    "rabbitmq-nodejs-client" : "*",
+    "amqp" : "*"
   }
 }
