@@ -2,6 +2,8 @@ import paramiko #ssh library
 import socket
 import json
 import struct
+from head_connection import Connector
+import pika, time
 
 class LawnConnection:
     def __init__(self, hostname):
@@ -60,7 +62,6 @@ class Client:
 clients = []
 
 # Yay for event loops!
-from head_connection import Connector
 con = Connector()
 while 1:
     # Update the clients
@@ -68,5 +69,11 @@ while 1:
         c.update()
 
     # Go check for the head
-    print con.recieve()
+    try:
+        print con.recieve()
+    except pika.exceptions.AMQPConnectionError:
+        print "We aren't connected to the head."
+        pass # We probably aren't connected
+
+    time.sleep(1)
     pass
