@@ -1,3 +1,23 @@
 {>"base.dust"/}
-<br>
-q: {q}
+{<css}
+<link href="/css/index.css" rel="stylesheet">
+{/css}
+{<js}
+<script src="/js/index.js"></script>
+{/js}
+{<container}
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span2"  style="background-color:green">
+      <!--Sidebar content-->
+      <img src="/img/logo.png">
+    </div>
+    <div class="span10" style="background-color:red">
+      <!--Body content-->
+      body
+      <div class="span3" style="background-color:blue">widget</div>
+      <div class="span7" style="background-color:yellow">widget2</div>
+    </div>
+  </div>
+</div>
+{/container}

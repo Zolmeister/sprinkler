@@ -10,6 +10,7 @@
     "consolidate": "*",
     "dustjs-linkedin": "*",
     "rabbitmq-nodejs-client" : "*",
-    "amqp" : "*"
+    "amqp" : "*",
+    "node-uuid" : "*"
   }
 }
