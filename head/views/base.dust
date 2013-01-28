@@ -31,7 +31,8 @@
 		{+base_js}
 		<script src="/js/jquery.min.js"></script>
 		<script src="/js/bootstrap.min.js" async></script>
-		<script src="backbone.min.js"></script>
+		<script src="/js/underscore.min.js"></script>
+		<script src="/js/backbone.min.js"></script>
 		{/base_js}
 		{+js/}
 		{/head}
