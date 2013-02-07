@@ -1,23 +1,18 @@
 (function() {
-  var MainContentCollection, ServerWidget, SidePanelView, Widget, WidgetView, mainBox, sidePanel,
+  var ServerNode, ServerNodeCollection, ServersWidget, ServersWidgetView, Widget, WidgetView, addWidget, widgets,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  SidePanelView = (function(_super) {
+  this.loadTemplate = function(name, callback) {
+    return $.get("/views/" + name + ".dust", function(data) {
+      return callback({
+        data: data,
+        name: name
+      });
+    });
+  };
 
-    __extends(SidePanelView, _super);
-
-    function SidePanelView() {
-      return SidePanelView.__super__.constructor.apply(this, arguments);
-    }
-
-    SidePanelView.prototype.initialize = function() {};
-
-    return SidePanelView;
-
-  })(Backbone.View);
-
-  sidePanel = new SidePanelView;
+  this.events = _.clone(Backbone.Events);
 
   Widget = (function(_super) {
 
@@ -27,31 +22,9 @@
       return Widget.__super__.constructor.apply(this, arguments);
     }
 
-    Widget.prototype.defaults = {
-      name: 'default',
-      width: 300,
-      height: 400
-    };
-
-    Widget.prototype.initialize = function() {};
-
     return Widget;
 
   })(Backbone.Model);
-
-  MainContentCollection = (function(_super) {
-
-    __extends(MainContentCollection, _super);
-
-    function MainContentCollection() {
-      return MainContentCollection.__super__.constructor.apply(this, arguments);
-    }
-
-    MainContentCollection.prototype.model = Widget;
-
-    return MainContentCollection;
-
-  })(Backbone.Collection);
 
   WidgetView = (function(_super) {
 
@@ -61,31 +34,208 @@
       return WidgetView.__super__.constructor.apply(this, arguments);
     }
 
-    WidgetView.prototype.initialize = function(model) {
-      return this.model = model;
+    WidgetView.prototype.initialize = function(template, el) {
+      this.self = this;
+      this.$el = el;
+      this.template = template;
+      return dust.loadSource(dust.compile(template.data, template.name));
+    };
+
+    WidgetView.prototype.render = function(options, callback) {
+      var template;
+      template = function(err, res) {
+        return this.$el.html(res);
+      };
+      return dust.render(this.template.name, options, template.bind(this));
     };
 
     return WidgetView;
 
   })(Backbone.View);
 
-  ServerWidget = (function(_super) {
+  ServerNode = (function(_super) {
 
-    __extends(ServerWidget, _super);
+    __extends(ServerNode, _super);
 
-    function ServerWidget() {
-      return ServerWidget.__super__.constructor.apply(this, arguments);
+    function ServerNode() {
+      return ServerNode.__super__.constructor.apply(this, arguments);
     }
 
-    return ServerWidget;
+    ServerNode.prototype.defaults = {
+      name: "name",
+      ip: "ip"
+    };
+
+    return ServerNode;
+
+  })(Backbone.Model);
+
+  ServerNodeCollection = (function(_super) {
+
+    __extends(ServerNodeCollection, _super);
+
+    function ServerNodeCollection() {
+      return ServerNodeCollection.__super__.constructor.apply(this, arguments);
+    }
+
+    ServerNodeCollection.prototype.model = ServerNode;
+
+    return ServerNodeCollection;
+
+  })(Backbone.Collection);
+
+  ServersWidget = (function(_super) {
+
+    __extends(ServersWidget, _super);
+
+    function ServersWidget() {
+      return ServersWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    ServersWidget.prototype.defaults = {
+      nodes: new ServerNodeCollection()
+    };
+
+    ServersWidget.prototype.initialize = function() {
+      return events.on("serverwidget:update", this.update.bind(this));
+    };
+
+    ServersWidget.prototype.update = function(data) {
+      var node, render;
+      this.get('nodes').update((function() {
+        var _i, _len, _ref, _results;
+        _ref = data.nodes;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          node = _ref[_i];
+          _results.push(new ServerNode(node));
+        }
+        return _results;
+      })());
+      console.log("got update");
+      console.log(this.get('nodes'));
+      render = {
+        nodes: this.get('nodes').toJSON()
+      };
+      return events.trigger("serverwidget:render", render);
+    };
+
+    return ServersWidget;
 
   })(Widget);
 
-  mainBox = new MainContentCollection;
+  ServersWidgetView = (function(_super) {
 
-  this.serverWidget = new ServerWidget;
+    __extends(ServersWidgetView, _super);
 
-  mainBox.add(serverWidget);
+    function ServersWidgetView() {
+      return ServersWidgetView.__super__.constructor.apply(this, arguments);
+    }
+
+    ServersWidgetView.prototype.initialize = function(model, template, el) {
+      ServersWidgetView.__super__.initialize.call(this, template, el);
+      return events.on("serverwidget:render", this.update.bind(this));
+    };
+
+    ServersWidgetView.prototype.update = function(data) {
+      return this.render(data);
+    };
+
+    return ServersWidgetView;
+
+  })(WidgetView);
+
+  widgets = {
+    serverwidget: {
+      model: ServersWidget,
+      view: ServersWidgetView
+    }
+  };
+
+  this.widgetList = [];
+
+  addWidget = function(name, callback) {
+    var el;
+    el = $("#mainBox").append($("<div></div>"));
+    return loadTemplate(name, function(data) {
+      widgetList.push(new widgets[name].view(new widgets[name].model, data, el));
+      return callback();
+    });
+  };
+
+  addWidget("serverwidget", function() {
+    this.socket = io.connect();
+    return this.socket.on("update", function(data) {
+      console.log(data);
+      return events.trigger(data.target, data);
+    });
+  });
+
+  /*
+  class SidePanelView extends Backbone.View
+  	initialize: -> 
+  
+  class MainContentCollection extends Backbone.Collection
+  	model: Widget
+  
+  class WidgetView extends Backbone.View
+  	initialize: ->
+  		@listenTo @model, 'change', this.render
+  		@listenTo @model, 'destroy', this.remove
+  		#@render()
+  	render: ->
+  		console.log "OMG RENDERING"
+  		#el.html()
+  
+  class Widget extends Backbone.Model
+  	defaults:
+  		name: 'default'
+  		width: 300
+  		height: 400
+  	initialize: ->#(template) ->
+  		#self = @
+  		#dust.loadSource dust.compile template.data,template.name
+  		#dust.render template.name, {name:"Jimmy"}, (err, res) ->
+  		#	self.template = res
+  		#	console.log "rendered"
+  
+  class ServerWidget extends Widget
+  	initialize: -># (template) ->
+  		#super template
+  		#events.on "#{template.name}:servers", @displayServers
+  
+  	#displayServers: (data) ->
+  	#	console.log data
+  	#	dust.render @template, {data}, (err, res) ->
+  	#		console.log "rendered"
+  
+  class ServerWidgetView extends WidgetView
+  
+  class MainContentView extends Backbone.View
+  	initialize: ->
+  		@collection.on 'add', @addWidget, @
+  
+  	addWidget: (widget) ->
+  		widget.render()
+  		#@$el.append widget.template
+  		
+  widgets =
+  	"serverwidget" : ServerWidget
+  
+  addWidget = (name) ->
+  	loadTemplate name , (data) ->
+  		console.log data
+  		mainCollection.add new WidgetView new widgets[name] data
+  
+  @sidePanel = new SidePanelView
+  @mainCollection = new MainContentCollection
+  @mainView = new MainContentView
+  	el : $ "#mainBox"
+  	collection : mainCollection
+  
+  addWidget "serverwidget"
+  */
+
 
   /*
   onclick = mainContentCollection.add(widgetEditorVIew(this.selection))

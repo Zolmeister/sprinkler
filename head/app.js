@@ -8,7 +8,8 @@ var express = require('express'),
     http = require('http'),
     path = require('path'),
     cons = require('consolidate'),
-    uuid = require('node-uuid')
+    uuid = require('node-uuid'),
+    socketConnection = require('./sockets');
 
     var app = express()
 app.engine('dust', cons.dust)
@@ -59,12 +60,18 @@ function respQueue(uuid, data) {
     }
 
 }
-http.createServer(app).listen(app.get('port'), function() {
+
+var server = http.createServer(app)
+
+var io = require('socket.io').listen(server)
+io.sockets.on('connection', socketConnection)
+
+server.listen(app.get('port'), function() {
     console.log("Express server listening on port " + app.get('port'))
 })
-var amqp = require('amqp');
+var amqp = require('amqp')
 
-var connection = amqp.createConnection();
+var connection = amqp.createConnection()
 
 // Wait for connection to become established.
 connection.on('ready', function () {
@@ -76,7 +83,7 @@ connection.on('ready', function () {
       // Receive messages
       q.subscribe(function (message) {
         // Print messages to stdout
-        console.log(message);
-      });
-  });
-});
+        console.log(message)
+      })
+  })
+})

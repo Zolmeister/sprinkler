@@ -27,23 +27,24 @@
 		{+icons}
 		<link rel="shortcut icon" href="/ico/favicon.ico">
 		{/icons}
-
-		{+base_js}
-		<script src="/js/jquery.min.js"></script>
-		<script src="/js/bootstrap.min.js" async></script>
-		<script src="/js/underscore.min.js"></script>
-		<script src="/js/backbone.min.js"></script>
-		{/base_js}
-		{+js/}
 		{/head}
 		{+head_extra/}
 	</head>
 
 	<body>
 		{+body}
-		<div class="container" id="main">
+		<div class="container">
 			{+container/}
 		</div>
 		{/body}
+		{+base_js}
+		<script src="/lib/jquery.min.js"></script>
+		<script src="/lib/dust-full-1.1.1.js"></script>
+		<script src="/lib/bootstrap.min.js" async></script>
+		<script src="/lib/underscore.min.js"></script>
+		<script src="/lib/backbone.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		{/base_js}
+		{+js/}
 	</body>
 </html>

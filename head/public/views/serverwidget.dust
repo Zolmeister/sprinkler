@@ -1,0 +1,11 @@
+<div>
+	{#nodes}
+		<div class="servernode" style="width:50px;height:50px;background-color:black;color:white">
+			{name}<br>
+			{ip}
+		</div>
+	{:else}
+		No Nodes
+	{/nodes}
+<br>
+</div>
