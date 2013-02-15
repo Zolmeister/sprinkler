@@ -6,17 +6,17 @@
 <script src="/js/index.js"></script>
 {/js}
 {<container}
-<div class="container-fluid">
-  <div class="row-fluid">
-    <div class="span2"  style="background-color:green">
+<div class="container-fluid outer">
+  <div class="row-fluid inner">
+    <div class="span2 sidebar">
       <!--Sidebar content-->
       <img src="/img/logo.png">
     </div>
-    <div id="mainBox" class="span10" style="background-color:red">
+    <div id="mainBox" class="span10">
       <!--Body content-->
       body
-      <div class="span3" style="background-color:blue">widget</div>
-      <div class="span7" style="background-color:yellow">widget2</div>
+      <div class="span3">widget</div>
+      <div class="span7">widget2</div>
     </div>
   </div>
 </div>

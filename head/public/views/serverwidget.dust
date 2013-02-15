@@ -1,6 +1,11 @@
-<div>
+<div class="span3 servers">
+	<div class="status">2 nodes
+		<span class="ready"></span>: 2
+		<span class="running"></span>: 0
+		<span class="error"></span>: 0
+	</div>
 	{#nodes}
-		<div class="servernode" style="width:50px;height:50px;background-color:black;color:white">
+		<div class="servernode">
 			{name}<br>
 			{ip}
 		</div>
