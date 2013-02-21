@@ -4,6 +4,7 @@ import json
 import struct
 from head_connection import Connector
 import pika, time
+import pymongo
 
 class LawnConnection:
     def __init__(self, hostname):
@@ -35,14 +36,28 @@ class LawnConnection:
         return ret
 
 class Client:
-    def __init__(self, hostname):
-        self.jobs = [] # List of job sequences
-        self.conn = LawnConnection(hostname)
+    def __init__(self, db, doc):
+        # Information about us in the database
+        self.id = str(doc["_id"]) # The mongo ID in string form
+        self.hostname = doc["hostname"]
+        self.default_job_username = "lane"
+
+        # State information
+        self.jobs = []
+        for j in doc.get("job_queue", []):
+            # j is a job ID
+            self.jobs.append(Job(db, db.jobs.find({"_id": j})))
+
+        self.conn = LawnConnection(self.hostname)
         self.finished_jobs = []
+        
+    def json(self):
+        return {}
 
     def update(self):
         if not self.conn.isWaitingOnReply and len(self.jobs) > 0:
             # Assign a new job!
+            self.conn.sendPacket({"cmd": self.jobs[0].cmd})
             pass
 
         if self.conn.isWaitingOnReply:
@@ -59,18 +74,43 @@ class Client:
 #l = LawnConnection("127.0.0.1")
 #l.sendPacket({"cmd": "uptime"})
 
-clients = []
+clients = {}
+
+# Load the clients from the mongo database
+conn = pymongo.MongoClient('localhost', 27017)
+db = conn.sprinkler
+
+for cdef in db.clients.find():
+    c = Client(db, cdef)
+    cid = str(cdef["_id"])
+    clients[cid] = c
+    pass
+
+def handle_AMQP(s):
+    pass
+
+def reply(d):
+    pass # Send d over the AMQP link.
 
 # Yay for event loops!
 con = Connector()
 while 1:
     # Update the clients
     for c in clients:
-        c.update()
+        clients[c].update()
 
     # Go check for the head
     try:
-        print con.recieve()
+        #print con.recieve()
+        cmd = json.loads(con.recieve())
+        if "getClient" in cmd:
+            cid = cmd["getClient"]
+            reply({"client": clients[cid].json()})
+        elif "getClientList" in cmd:
+            d = {"clientList": []}
+            for c in clients:
+                d["clientList"].append(c.json())
+            reply(d)
     except pika.exceptions.AMQPConnectionError:
         print "We aren't connected to the head."
         pass # We probably aren't connected
