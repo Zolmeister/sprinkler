@@ -11,6 +11,8 @@
     "dustjs-linkedin": "*",
     "rabbitmq-nodejs-client" : "*",
     "amqp" : "*",
-    "node-uuid" : "*"
+    "node-uuid" : "*",
+    "stylus": "*",
+    "nib": "*"
   }
 }

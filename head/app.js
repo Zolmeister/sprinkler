@@ -9,9 +9,11 @@ var express = require('express'),
     path = require('path'),
     cons = require('consolidate'),
     uuid = require('node-uuid'),
-    socketConnection = require('./sockets');
+    socketConnection = require('./sockets'),
+    stylus = require('stylus'),
+    nib = require('nib');
 
-    var app = express()
+var app = express()
 app.engine('dust', cons.dust)
 app.configure(function() {
     app.set('port', process.env.PORT || 3000)
@@ -24,6 +26,10 @@ app.configure(function() {
         layout: false
     })
     app.use(express.logger('dev'))
+    app.use(stylus.middleware({
+        src: __dirname + '/public',
+        compile: compile
+    }))
     app.use(express.bodyParser())
     app.use(express.methodOverride())
     app.use(app.router)
@@ -34,7 +40,7 @@ app.configure('development', function() {
     app.use(express.errorHandler())
 })
 
-app.get('/', routes.index);
+app.get('/', routes.index)
 app.get('/test', function(req, res) {
     var q = req.param('q', "")
     var uuid = uuid.v4()
@@ -58,7 +64,14 @@ function respQueue(uuid, data) {
         queue[uuid](data)
         queue[uuid] = undefined
     }
+}
 
+function compile(str, path) {
+    console.log("COMPILE")
+    console.log(path)
+  return stylus(str)
+    .set('filename', path)
+    .use(nib())
 }
 
 var server = http.createServer(app)
@@ -74,16 +87,18 @@ var amqp = require('amqp')
 var connection = amqp.createConnection()
 
 // Wait for connection to become established.
-connection.on('ready', function () {
-  // Use the default 'amq.topic' exchange
-  connection.queue('my-queue', function(q){
-      // Catch all messages
-      q.bind('#');
-      connection.publish("request_queue",{a:'a'})
-      // Receive messages
-      q.subscribe(function (message) {
-        // Print messages to stdout
-        console.log(message)
-      })
-  })
+connection.on('ready', function() {
+    // Use the default 'amq.topic' exchange
+    connection.queue('my-queue', function(q) {
+        // Catch all messages
+        q.bind('#');
+        connection.publish("request_queue", {
+            a: 'a'
+        })
+        // Receive messages
+        q.subscribe(function(message) {
+            // Print messages to stdout
+            console.log(message)
+        })
+    })
 })

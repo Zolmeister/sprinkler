@@ -1,13 +1,14 @@
 <div class="span3 servers">
 	<div class="status">2 nodes
-		<span class="ready"></span>: 2
-		<span class="running"></span>: 0
-		<span class="error"></span>: 0
+		<span class="dot ready"></span>: 2
+		<span class="dot running"></span>: 0
+		<span class="dot error"></span>: 0
 	</div>
 	{#nodes}
-		<div class="servernode">
+		<div class="servernode {status}" data-id="{id}">
 			{name}<br>
 			{ip}
+			<span class="info-button">i</span>
 		</div>
 	{:else}
 		No Nodes

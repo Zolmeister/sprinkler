@@ -1,5 +1,5 @@
 (function() {
-  var ServerNode, ServerNodeCollection, ServersWidget, ServersWidgetView, Widget, WidgetView, addWidget, widgets,
+  var InfoWidget, InfoWidgetView, ServerNode, ServerNodeCollection, ServersWidget, ServersWidgetView, Widget, WidgetView, addWidget, widgets,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -34,8 +34,9 @@
       return WidgetView.__super__.constructor.apply(this, arguments);
     }
 
-    WidgetView.prototype.initialize = function(template, el) {
+    WidgetView.prototype.initialize = function(model, template, el) {
       this.self = this;
+      this.model = model;
       this.$el = el;
       this.template = template;
       return dust.loadSource(dust.compile(template.data, template.name));
@@ -44,7 +45,8 @@
     WidgetView.prototype.render = function(options, callback) {
       var template;
       template = function(err, res) {
-        return this.$el.html(res);
+        this.$el.replaceWith(res);
+        return this.delegateEvents(this.events);
       };
       return dust.render(this.template.name, options, template.bind(this));
     };
@@ -63,7 +65,8 @@
 
     ServerNode.prototype.defaults = {
       name: "name",
-      ip: "ip"
+      ip: "ip",
+      status: "ready"
     };
 
     return ServerNode;
@@ -132,16 +135,78 @@
       return ServersWidgetView.__super__.constructor.apply(this, arguments);
     }
 
+    ServersWidgetView.prototype.events = {
+      'click .info-button': 'info'
+    };
+
     ServersWidgetView.prototype.initialize = function(model, template, el) {
-      ServersWidgetView.__super__.initialize.call(this, template, el);
-      return events.on("serverwidget:render", this.update.bind(this));
+      ServersWidgetView.__super__.initialize.call(this, model, template, el);
+      _.bindAll(this, 'update', 'info');
+      return events.on("serverwidget:render", this.update);
     };
 
     ServersWidgetView.prototype.update = function(data) {
       return this.render(data);
     };
 
+    ServersWidgetView.prototype.info = function(ev) {
+      var id;
+      console.log("ASDASD");
+      id = $(ev.currentTarget).parent().data('id');
+      return events.trigger("infowidget:showinfo", this.model.get('nodes').get(id));
+    };
+
     return ServersWidgetView;
+
+  })(WidgetView);
+
+  InfoWidget = (function(_super) {
+
+    __extends(InfoWidget, _super);
+
+    function InfoWidget() {
+      return InfoWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    InfoWidget.prototype.defaults = {
+      node: new ServerNode()
+    };
+
+    InfoWidget.prototype.initialize = function() {
+      return events.on("infowidget:showinfo", this.update.bind(this));
+    };
+
+    InfoWidget.prototype.update = function(data) {
+      var render;
+      this.set('node', data);
+      render = {
+        node: data.toJSON()
+      };
+      return events.trigger('infowidget:render', render);
+    };
+
+    return InfoWidget;
+
+  })(Widget);
+
+  InfoWidgetView = (function(_super) {
+
+    __extends(InfoWidgetView, _super);
+
+    function InfoWidgetView() {
+      return InfoWidgetView.__super__.constructor.apply(this, arguments);
+    }
+
+    InfoWidgetView.prototype.initialize = function(model, template, el) {
+      InfoWidgetView.__super__.initialize.call(this, model, template, el);
+      return events.on("infowidget:render", this.update.bind(this));
+    };
+
+    InfoWidgetView.prototype.update = function(data) {
+      return this.render(data);
+    };
+
+    return InfoWidgetView;
 
   })(WidgetView);
 
@@ -149,6 +214,10 @@
     serverwidget: {
       model: ServersWidget,
       view: ServersWidgetView
+    },
+    infowidget: {
+      model: InfoWidget,
+      view: InfoWidgetView
     }
   };
 
@@ -156,7 +225,7 @@
 
   addWidget = function(name, callback) {
     var el;
-    el = $("#mainBox").append($("<div></div>"));
+    el = $('<div/>').appendTo('#mainBox');
     return loadTemplate(name, function(data) {
       widgetList.push(new widgets[name].view(new widgets[name].model, data, el));
       return callback();
@@ -166,10 +235,11 @@
   addWidget("serverwidget", function() {
     this.socket = io.connect();
     return this.socket.on("update", function(data) {
-      console.log(data);
       return events.trigger(data.target, data);
     });
   });
+
+  addWidget("infowidget", function(data) {});
 
   /*
   class SidePanelView extends Backbone.View

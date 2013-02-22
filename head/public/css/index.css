@@ -1,52 +1,95 @@
-html,body{
-	height:100%;
+html,
+body {
+  height: 100%;
 }
-.container{
-	height:80%;
+::-webkit-scrollbar {
+  width: 10px;
 }
-.outer{
-	height:100%;
-	padding:15px;
-	margin-top:20px;
-	background-color: #D17819;
-	border-radius: 10px;
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0,255,0,0.3);
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
 }
-.inner{
-	height:100%;
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+  background-color: #00c5a4;
 }
-.sidebar,#mainBox,.servers{
-	padding:10px;
-	height:100%;
-	border-radius: 10px;
-	background-color: #BA6C18;
-    box-shadow:	inset 0 0 8px #222;
+.container {
+  height: 90%;
 }
-.servers{
-	background-color: #B58E64;
-	padding-top:20px;
+.outer {
+  height: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #00a287;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
 }
-.servernode{
-	border-radius: 4px;
-	margin-top:10px;
-	padding:10px;
-	background-color: #68B564;
-  	box-shadow:	0px 0px 4px #222;
+.inner {
+  height: 100%;
 }
-.status{
-	margin-top:-10px;
-	float:left;
+.sidebar,
+#mainBox,
+.servers,
+.info {
+  padding: 10px;
+  height: 100%;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  background-color: #00927a;
+  -webkit-box-shadow: inset 0 0 6px #444;
+  box-shadow: inset 0 0 6px #444;
 }
-.ready,.error,.running{
-	width:10px;
-	height:10px;
-	background-color: #68B564;
-	display: inline-block;
-	margin-right:2px;
-	border-radius: 10px;
+.servers {
+  background-color: #2dd700;
+  padding-top: 20px;
+  overflow-y: auto;
 }
-.error{
-	background-color: #B56464;
+.info {
+  padding-left: 10px;
 }
-.running{
-	background-color: #B5B464;
+.servernode {
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #00d744;
+  -webkit-box-shadow: 0px 0px 4px #222;
+  box-shadow: 0px 0px 4px #222;
+}
+.status {
+  margin-top: -10px;
+  float: left;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  margin-right: 2px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  -webkit-box-shadow: 0px 0px 2px #000;
+  box-shadow: 0px 0px 2px #000;
+}
+.ready {
+  background-color: #00d744;
+}
+.error {
+  background-color: #d71500;
+}
+.running {
+  background-color: #d7b700;
+}
+.info-button {
+  float: right;
+  background-color: #206eea;
+  color: #fff;
+  font-weight: bold;
+  width: 10px;
+  text-align: center;
+  -webkit-box-shadow: 0px 0px 2px #000;
+  box-shadow: 0px 0px 2px #000;
+  cursor: pointer;
 }

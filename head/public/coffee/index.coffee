@@ -9,21 +9,24 @@
 class Widget extends Backbone.Model
 
 class WidgetView extends Backbone.View
-	initialize:(template, el) ->
+	initialize:(model, template, el) ->
 		@self = @
+		@model = model
 		@$el = el
 		@template = template
 		dust.loadSource dust.compile template.data,template.name
 	render: (options, callback)->
 		template = (err, res)->
-			@$el.html(res)
+			@$el.replaceWith(res)
+			@delegateEvents(@events)
 		dust.render @template.name, options, template.bind(@)
-			
+
 
 class ServerNode extends Backbone.Model
 	defaults:
 		name: "name"
 		ip: "ip"
+		status: "ready"
 
 class ServerNodeCollection extends Backbone.Collection
 	model: ServerNode
@@ -42,9 +45,34 @@ class ServersWidget extends Widget
 		events.trigger "serverwidget:render", render
 
 class ServersWidgetView extends WidgetView
+	events:
+		'click .info-button': 'info'
 	initialize: (model,template, el)->
-		super template, el
-		events.on "serverwidget:render", @update.bind @
+		super model, template, el
+		_.bindAll @, 'update', 'info'
+		events.on "serverwidget:render", @update
+	update: (data) ->
+		@render data
+	info: (ev) ->
+		console.log "ASDASD"
+		id = $(ev.currentTarget).parent().data('id')
+		events.trigger "infowidget:showinfo", @model.get('nodes').get(id)
+
+class InfoWidget extends Widget
+	defaults:
+		node: new ServerNode()
+	initialize: ->
+		events.on "infowidget:showinfo", @update.bind @
+	update: (data) ->
+		@set('node',data)
+		render = 
+			node: data.toJSON()
+		events.trigger 'infowidget:render', render
+
+class InfoWidgetView extends WidgetView
+	initialize: (model, template, el)->
+		super model, template, el
+		events.on "infowidget:render", @update.bind @
 	update: (data) ->
 		@render data
 
@@ -52,11 +80,14 @@ widgets =
 	serverwidget : 
 		model: ServersWidget
 		view: ServersWidgetView
+	infowidget :
+		model: InfoWidget
+		view: InfoWidgetView
 
 @widgetList = []
 
 addWidget = (name, callback) ->
-	el = $("#mainBox").append($("<div></div>"))
+	el = $('<div/>').appendTo('#mainBox')#$("#mainBox").append("<div></div>")
 	loadTemplate name , (data) ->
 		widgetList.push new widgets[name].view new widgets[name].model,data,el
 		callback()
@@ -64,8 +95,11 @@ addWidget = (name, callback) ->
 addWidget "serverwidget", ->
 	@socket = io.connect()
 	@socket.on "update", (data) -> 
-		console.log data
 		events.trigger data.target, data
+
+addWidget "infowidget", (data) ->
+	
+
 ###
 class SidePanelView extends Backbone.View
 	initialize: -> 

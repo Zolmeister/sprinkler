@@ -13,10 +13,6 @@
       <img src="/img/logo.png">
     </div>
     <div id="mainBox" class="span10">
-      <!--Body content-->
-      body
-      <div class="span3">widget</div>
-      <div class="span7">widget2</div>
     </div>
   </div>
 </div>
