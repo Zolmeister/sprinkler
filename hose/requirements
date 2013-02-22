@@ -4,3 +4,4 @@ pika==0.9.8
 pycrypto==2.6
 uuid==1.30
 wsgiref==0.1.2
+pymongo==2.4.0
