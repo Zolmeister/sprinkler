@@ -11,6 +11,7 @@ import pymongo
 from bson import ObjectId
 from job import Job
 import select
+import install_lawn
 
 class LawnConnection:
     def __init__(self, hostname):
@@ -56,6 +57,10 @@ class Client:
 
         self.conn = LawnConnection(self.hostname)
         self.finished_jobs = []
+
+    def install(self, ssh_user, ssh_pw, root_pw):
+        install_lawn.install(self.hostname, ssh_user, ssh_pw, root_pw)
+        pass
         
     def json(self):
         return {}
@@ -113,6 +118,7 @@ def createClient(doc):
     clients[cid] = Client(db, doc)
 
     # Also, we should SSH in and deploy a lawn node.
+    clients[cid].install(doc["ssh_user"], doc["ssh_pw"], doc["root_pw"])
 
     return cid
 

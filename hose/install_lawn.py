@@ -9,7 +9,7 @@ def install(hostname, ssh_user, ssh_pw, root_pw):
     chan = client.invoke_shell()
 
     # Quick test that we can send commands
-    time.sleep(5)
+    time.sleep(1)
     chan.send("uptime\n")
 
     # Create a directory in /tmp for us to work in
@@ -19,22 +19,28 @@ def install(hostname, ssh_user, ssh_pw, root_pw):
     time.sleep(1)
 
     # Copy over the source file
-    chan.send("cat > client.py\n")
-    chan.send(open("../lawn/client.py").read())
-    chan.send("%c"%0x03) # Send ctrl-c
-    time.sleep(5)
+    #chan.send("cat > client.py\n")
+    #chan.send(open("../lawn/client.py").read())
+    #time.sleep(2)
+    #chan.send("%c"%0x03) # Send ctrl-c
+    chan.send("echo \"%s\" > client.py\n"%open("../lawn/client.py").read().replace("\"", "\\\""))
+    time.sleep(1)
 
     # Copy over the upstart file
-    chan.send("cat > lawn.conf\n")
-    chan.send(open("../lawn/lawn.conf").read())
-    chan.send("%c"%0x03)
-    time.sleep(5)
+    #chan.send("cat > lawn.conf\n")
+    #chan.send(open("../lawn/lawn.conf").read())
+    #time.sleep(2)
+    #chan.send("%c"%0x03)
+    chan.send("echo \"%s\" > lawn.conf\n"%open("../lawn/lawn.conf").read().replace("\"", "\\\""))
+    time.sleep(1)
 
     # Copy over the initial config file
-    chan.send("cat > sprinkler.conf\n")
-    chan.send(open("../lawn/sprinkler.conf").read())
-    chan.send("%c"%0x03)
-    time.sleep(5)
+    #chan.send("cat > sprinkler.conf\n")
+    #chan.send(open("../lawn/sprinkler.conf").read())
+    #time.sleep(2)
+    #chan.send("%c"%0x03)
+    chan.send("echo \"%s\" > sprinkler.conf\n"%open("../lawn/sprinkler.conf").read().replace("\"", "\\\""))
+    time.sleep(1)
 
     # Sudo
     chan.send("sudo su\n")
@@ -46,7 +52,7 @@ def install(hostname, ssh_user, ssh_pw, root_pw):
     chan.send("cp client.py /usr/bin/sprinkler.py\n")
     chan.send("cp sprinkler.conf /etc/\n")
     chan.send("cp lawn.conf /etc/init/\n")
-    time.sleep(5)
+    time.sleep(1)
 
     # Create the user we're running as
     chan.send("adduser --no-create-home --system --disabled-password --disabled-login sprinkler\n")
