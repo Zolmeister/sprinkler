@@ -18,3 +18,7 @@ class Connector:
             if c.cmd_ready:
                 return c.get_command()
         return None
+
+    def send(self, s):
+        for c in self.clients:
+            c.send(s)

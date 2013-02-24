@@ -17,4 +17,6 @@ class Connector:
 	        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 	        connection.close() 
 	        return body
-	
+
+	def send(self, s):
+		pass

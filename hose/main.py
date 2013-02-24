@@ -101,6 +101,7 @@ def handle_AMQP(s):
     pass
 
 def reply(d):
+    con.send(json.dumps(d))
     pass # Send over the AMQP link.
 
 # Doc has the following:
@@ -112,15 +113,21 @@ def createClient(doc):
     if "force_id" in doc:
         doc["_id"] = ObjectId(doc["force_id"])
         del doc["force_id"]
+    doc["status"] = "installing"
     cid = str(db.clients.insert(doc))
 
     # Add it to the memory database
-    clients[cid] = Client(db, doc)
+    c = Client(db, doc)
 
     # Also, we should SSH in and deploy a lawn node.
-    clients[cid].install(doc["ssh_user"], doc["ssh_pw"], doc["root_pw"])
+    try:
+        c.install(doc["ssh_user"], doc["ssh_pw"], doc["root_pw"])
+    except socket.error:
+        print "Could not install the lawn."
+        return (cid, "socket error while installing lawn. Check network connection.")
+    clients[cid] = c
 
-    return cid
+    return (cid, "")
 
 def removeClient(cid):
     # TODO: Implement
@@ -131,13 +138,16 @@ def removeClient(cid):
 def createJob(client_id, jobspec):
     j = db.jobs.insert(jobspec)
     clients[client_id].jobs.append(Job(db, db.jobs.find_one({"_id": j})))
-    pass
+    return str(j)
 
 def removeJob(jid):
     pass
 
 def getJobInformation(jid):
-    return db.jobs.find({"_id": jid})
+    d = db.jobs.find_one({"_id": ObjectId(jid)})
+    d["id"] = str(d["_id"])
+    del d["_id"]
+    return d
 
 # Yay for event loops!
 con = Connector()
@@ -169,11 +179,14 @@ while 1:
         elif "createClient" in cmd:
             # Create a client!
             cid = createClient(cmd["createClient"])
-            reply({"id": cid})
+            if not cid[0]:
+                reply({"id": None, "error": cid[1]})
+            else:
+                reply({"id": cid[0]})
         elif "newJob" in cmd:
             # Add a job to (someone's) queue
-            createJob(cmd["newJob"]["client_id"], cmd["newJob"]["job"])
-            reply({"success": True})
+            jid = createJob(cmd["newJob"]["client_id"], cmd["newJob"]["job"])
+            reply({"id": jid, "success": True})
         elif "removeJob" in cmd:
             # Remove/cancel a job from the queue
             removeJob(cmd["removeJob"])
