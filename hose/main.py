@@ -10,6 +10,7 @@ import pika, time
 import pymongo
 from bson import ObjectId
 from job import Job
+import select
 
 class LawnConnection:
     def __init__(self, hostname):
@@ -23,8 +24,8 @@ class LawnConnection:
         s.send(struct.pack("I", len(cmd)))
         s.send(cmd)
         self.sock = s
-        self.poll = poll.poll()
-        self.poll.register(self.sock, poll.POLLIN)
+        self.poll = select.poll()
+        self.poll.register(self.sock, select.POLLIN)
         self.isWaitingOnReply = True
 
     def recieveReply(self):
@@ -38,7 +39,7 @@ class LawnConnection:
         ret = self.sock.recv(l)
         self.isWaitingOnReply = False
         print ret
-        return ret
+        return json.loads(ret)
 
 class Client:
     def __init__(self, db, doc):
@@ -70,9 +71,9 @@ class Client:
             ret = self.conn.recieveReply()
             if ret is not None:
                 # Do something with the return value
-                jobs[0].setReturnValue(ret)
-                self.finished_jobs.append(jobs[0])
-                del jobs[0]
+                self.jobs[0].setReturnValue(ret["retval"])
+                self.finished_jobs.append(self.jobs[0])
+                del self.jobs[0]
                 pass
         pass
 
@@ -123,7 +124,7 @@ def removeClient(cid):
 # - "cmd": The shell command.
 def createJob(client_id, jobspec):
     j = db.jobs.insert(jobspec)
-    clients[client_id].jobs.append(Job(db, db.jobs.find({"_id": j})))
+    clients[client_id].jobs.append(Job(db, db.jobs.find_one({"_id": j})))
     pass
 
 def removeJob(jid):
