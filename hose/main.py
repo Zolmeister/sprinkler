@@ -2,9 +2,16 @@ import paramiko #ssh library
 import socket
 import json
 import struct
-from head_connection import Connector
+if False:
+    from head_connection import Connector
+else:
+    from testing_connector import Connector
 import pika, time
 import pymongo
+from bson import ObjectId
+from job import Job
+import select
+import install_lawn
 
 class LawnConnection:
     def __init__(self, hostname):
@@ -18,8 +25,8 @@ class LawnConnection:
         s.send(struct.pack("I", len(cmd)))
         s.send(cmd)
         self.sock = s
-        self.poll = poll.poll()
-        self.poll.register(self.sock, poll.POLLIN)
+        self.poll = select.poll()
+        self.poll.register(self.sock, select.POLLIN)
         self.isWaitingOnReply = True
 
     def recieveReply(self):
@@ -33,7 +40,7 @@ class LawnConnection:
         ret = self.sock.recv(l)
         self.isWaitingOnReply = False
         print ret
-        return ret
+        return json.loads(ret)
 
 class Client:
     def __init__(self, db, doc):
@@ -50,6 +57,10 @@ class Client:
 
         self.conn = LawnConnection(self.hostname)
         self.finished_jobs = []
+
+    def install(self, ssh_user, ssh_pw, root_pw):
+        install_lawn.install(self.hostname, ssh_user, ssh_pw, root_pw)
+        pass
         
     def json(self):
         return {}
@@ -65,9 +76,9 @@ class Client:
             ret = self.conn.recieveReply()
             if ret is not None:
                 # Do something with the return value
-                jobs[0].setReturnValue(ret)
-                self.finished_jobs.append(jobs[0])
-                del jobs[0]
+                self.jobs[0].setReturnValue(ret["retval"])
+                self.finished_jobs.append(self.jobs[0])
+                del self.jobs[0]
                 pass
         pass
 
@@ -90,7 +101,53 @@ def handle_AMQP(s):
     pass
 
 def reply(d):
-    pass # Send d over the AMQP link.
+    con.send(json.dumps(d))
+    pass # Send over the AMQP link.
+
+# Doc has the following:
+# - IP: IP address of the client.
+# - Default User: The user to run as.
+# - Job queue: A queue of jobs, which defaults to []
+def createClient(doc):
+    doc["job_queue"] = []
+    if "force_id" in doc:
+        doc["_id"] = ObjectId(doc["force_id"])
+        del doc["force_id"]
+    doc["status"] = "installing"
+    cid = str(db.clients.insert(doc))
+
+    # Add it to the memory database
+    c = Client(db, doc)
+
+    # Also, we should SSH in and deploy a lawn node.
+    try:
+        c.install(doc["ssh_user"], doc["ssh_pw"], doc["root_pw"])
+    except socket.error:
+        print "Could not install the lawn."
+        return (cid, "socket error while installing lawn. Check network connection.")
+    clients[cid] = c
+
+    return (cid, "")
+
+def removeClient(cid):
+    # TODO: Implement
+    pass
+
+# Jobspec contains:
+# - "cmd": The shell command.
+def createJob(client_id, jobspec):
+    j = db.jobs.insert(jobspec)
+    clients[client_id].jobs.append(Job(db, db.jobs.find_one({"_id": j})))
+    return str(j)
+
+def removeJob(jid):
+    pass
+
+def getJobInformation(jid):
+    d = db.jobs.find_one({"_id": ObjectId(jid)})
+    d["id"] = str(d["_id"])
+    del d["_id"]
+    return d
 
 # Yay for event loops!
 con = Connector()
@@ -102,7 +159,11 @@ while 1:
     # Go check for the head
     try:
         #print con.recieve()
-        cmd = json.loads(con.recieve())
+        cmd = con.recieve()
+        if cmd == None:
+            continue
+        print cmd
+        cmd = json.loads(cmd)
         if "getClient" in cmd:
             cid = cmd["getClient"]
             reply({"client": clients[cid].json()})
@@ -111,6 +172,28 @@ while 1:
             for c in clients:
                 d["clientList"].append(c.json())
             reply(d)
+        elif "removeClient" in cmd:
+            # Remove the client!
+            removeClient(cmd["removeClient"])
+            pass
+        elif "createClient" in cmd:
+            # Create a client!
+            cid = createClient(cmd["createClient"])
+            if not cid[0]:
+                reply({"id": None, "error": cid[1]})
+            else:
+                reply({"id": cid[0]})
+        elif "newJob" in cmd:
+            # Add a job to (someone's) queue
+            jid = createJob(cmd["newJob"]["client_id"], cmd["newJob"]["job"])
+            reply({"id": jid, "success": True})
+        elif "removeJob" in cmd:
+            # Remove/cancel a job from the queue
+            removeJob(cmd["removeJob"])
+            pass
+        elif "getJob" in cmd:
+            # Retreive information about a job
+            reply(getJobInformation(cmd["getJob"]))
     except pika.exceptions.AMQPConnectionError:
         print "We aren't connected to the head."
         pass # We probably aren't connected

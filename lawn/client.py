@@ -1,6 +1,6 @@
 print "I am the client, my job is to connect to the hose"
 
-import paramiko
+#import paramiko
 import socket
 import threading
 import json
@@ -8,7 +8,7 @@ import struct
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind(("localhost", 4321))
+s.bind(("", 4321))
 s.listen(10)
 
 while True:
