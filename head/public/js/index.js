@@ -45,8 +45,11 @@
     WidgetView.prototype.render = function(options, callback) {
       var template;
       template = function(err, res) {
-        this.$el.replaceWith(res);
-        return this.delegateEvents(this.events);
+        var className;
+        this.$el.html(res);
+        className = this.$el.children(":first").attr("class");
+        this.$el.children(":first").children(":first").unwrap();
+        return this.$el.attr("class", className);
       };
       return dust.render(this.template.name, options, template.bind(this));
     };
@@ -151,7 +154,6 @@
 
     ServersWidgetView.prototype.info = function(ev) {
       var id;
-      console.log("ASDASD");
       id = $(ev.currentTarget).parent().data('id');
       return events.trigger("infowidget:showinfo", this.model.get('nodes').get(id));
     };

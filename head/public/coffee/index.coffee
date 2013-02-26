@@ -17,8 +17,10 @@ class WidgetView extends Backbone.View
 		dust.loadSource dust.compile template.data,template.name
 	render: (options, callback)->
 		template = (err, res)->
-			@$el.replaceWith(res)
-			@delegateEvents(@events)
+			@$el.html(res)
+			className = @$el.children(":first").attr("class")
+			@$el.children(":first").children(":first").unwrap()
+			@$el.attr("class", className)
 		dust.render @template.name, options, template.bind(@)
 
 
@@ -54,7 +56,6 @@ class ServersWidgetView extends WidgetView
 	update: (data) ->
 		@render data
 	info: (ev) ->
-		console.log "ASDASD"
 		id = $(ev.currentTarget).parent().data('id')
 		events.trigger "infowidget:showinfo", @model.get('nodes').get(id)
 
@@ -87,7 +88,7 @@ widgets =
 @widgetList = []
 
 addWidget = (name, callback) ->
-	el = $('<div/>').appendTo('#mainBox')#$("#mainBox").append("<div></div>")
+	el = $('<div/>').appendTo('#mainBox')
 	loadTemplate name , (data) ->
 		widgetList.push new widgets[name].view new widgets[name].model,data,el
 		callback()

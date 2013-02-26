@@ -1,5 +1,6 @@
-<div class="span3 servers">
-	<div class="status">2 nodes
+<div class="span3 widget servers">
+	<div class="status">
+		2 nodes
 		<span class="dot ready"></span>: 2
 		<span class="dot running"></span>: 0
 		<span class="dot error"></span>: 0
