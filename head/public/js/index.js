@@ -1,5 +1,5 @@
 (function() {
-  var InfoWidget, InfoWidgetView, ServerNode, ServerNodeCollection, ServersWidget, ServersWidgetView, Widget, WidgetView, addWidget, widgets,
+  var InfoWidget, InfoWidgetView, JobWidget, JobWidgetView, ServerNode, ServerNodeCollection, ServersWidget, ServersWidgetView, Widget, WidgetView, addWidget, widgets,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -139,12 +139,13 @@
     }
 
     ServersWidgetView.prototype.events = {
-      'click .info-button': 'info'
+      'click .info-button': 'info',
+      'click .job-button': 'job'
     };
 
     ServersWidgetView.prototype.initialize = function(model, template, el) {
       ServersWidgetView.__super__.initialize.call(this, model, template, el);
-      _.bindAll(this, 'update', 'info');
+      _.bindAll(this, 'update', 'info', 'job', 'getModelFromEv');
       return events.on("serverwidget:render", this.update);
     };
 
@@ -152,10 +153,18 @@
       return this.render(data);
     };
 
-    ServersWidgetView.prototype.info = function(ev) {
+    ServersWidgetView.prototype.getModelFromEv = function(ev) {
       var id;
       id = $(ev.currentTarget).parent().data('id');
-      return events.trigger("infowidget:showinfo", this.model.get('nodes').get(id));
+      return this.model.get('nodes').get(id);
+    };
+
+    ServersWidgetView.prototype.info = function(ev) {
+      return events.trigger("infowidget:showinfo", this.getModelFromEv(ev));
+    };
+
+    ServersWidgetView.prototype.job = function(ev) {
+      return events.trigger("jobwidget:show", this.getModelFromEv(ev));
     };
 
     return ServersWidgetView;
@@ -212,6 +221,60 @@
 
   })(WidgetView);
 
+  JobWidget = (function(_super) {
+
+    __extends(JobWidget, _super);
+
+    function JobWidget() {
+      return JobWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    JobWidget.prototype.defaults = {
+      node: new ServerNode()
+    };
+
+    JobWidget.prototype.initialize = function() {
+      return events.on("jobwidget:show", this.update.bind(this));
+    };
+
+    JobWidget.prototype.update = function(data) {
+      var render;
+      this.set('node', data);
+      render = {
+        node: data.toJSON()
+      };
+      return events.trigger('jobwidget:render', render);
+    };
+
+    return JobWidget;
+
+  })(Widget);
+
+  JobWidgetView = (function(_super) {
+
+    __extends(JobWidgetView, _super);
+
+    function JobWidgetView() {
+      return JobWidgetView.__super__.constructor.apply(this, arguments);
+    }
+
+    JobWidgetView.prototype.initialize = function(model, template, el) {
+      JobWidgetView.__super__.initialize.call(this, model, template, el);
+      events.on("jobwidget:render", this.update.bind(this));
+      return console.log(this.$el);
+    };
+
+    JobWidgetView.prototype.update = function(data) {
+      this.render(data);
+      return new Behave({
+        textarea: this.$el.find("textarea")[0]
+      });
+    };
+
+    return JobWidgetView;
+
+  })(WidgetView);
+
   widgets = {
     serverwidget: {
       model: ServersWidget,
@@ -220,6 +283,10 @@
     infowidget: {
       model: InfoWidget,
       view: InfoWidgetView
+    },
+    jobwidget: {
+      model: JobWidget,
+      view: JobWidgetView
     }
   };
 
@@ -230,7 +297,9 @@
     el = $('<div/>').appendTo('#mainBox');
     return loadTemplate(name, function(data) {
       widgetList.push(new widgets[name].view(new widgets[name].model, data, el));
-      return callback();
+      if (callback) {
+        return callback();
+      }
     });
   };
 
@@ -241,78 +310,8 @@
     });
   });
 
-  addWidget("infowidget", function(data) {});
+  addWidget("infowidget");
 
-  /*
-  class SidePanelView extends Backbone.View
-  	initialize: -> 
-  
-  class MainContentCollection extends Backbone.Collection
-  	model: Widget
-  
-  class WidgetView extends Backbone.View
-  	initialize: ->
-  		@listenTo @model, 'change', this.render
-  		@listenTo @model, 'destroy', this.remove
-  		#@render()
-  	render: ->
-  		console.log "OMG RENDERING"
-  		#el.html()
-  
-  class Widget extends Backbone.Model
-  	defaults:
-  		name: 'default'
-  		width: 300
-  		height: 400
-  	initialize: ->#(template) ->
-  		#self = @
-  		#dust.loadSource dust.compile template.data,template.name
-  		#dust.render template.name, {name:"Jimmy"}, (err, res) ->
-  		#	self.template = res
-  		#	console.log "rendered"
-  
-  class ServerWidget extends Widget
-  	initialize: -># (template) ->
-  		#super template
-  		#events.on "#{template.name}:servers", @displayServers
-  
-  	#displayServers: (data) ->
-  	#	console.log data
-  	#	dust.render @template, {data}, (err, res) ->
-  	#		console.log "rendered"
-  
-  class ServerWidgetView extends WidgetView
-  
-  class MainContentView extends Backbone.View
-  	initialize: ->
-  		@collection.on 'add', @addWidget, @
-  
-  	addWidget: (widget) ->
-  		widget.render()
-  		#@$el.append widget.template
-  		
-  widgets =
-  	"serverwidget" : ServerWidget
-  
-  addWidget = (name) ->
-  	loadTemplate name , (data) ->
-  		console.log data
-  		mainCollection.add new WidgetView new widgets[name] data
-  
-  @sidePanel = new SidePanelView
-  @mainCollection = new MainContentCollection
-  @mainView = new MainContentView
-  	el : $ "#mainBox"
-  	collection : mainCollection
-  
-  addWidget "serverwidget"
-  */
-
-
-  /*
-  onclick = mainContentCollection.add(widgetEditorVIew(this.selection))
-  onclick = mainContentCollection.add(widgetInfoView(this.selection))
-  */
-
+  addWidget("jobwidget");
 
 }).call(this);

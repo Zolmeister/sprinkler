@@ -1,0 +1,16 @@
+<div class="span5 widget job-create">
+	<div class="title">
+		<div style="text-align: center">New Job</div>
+		<div style="text-align: center">{node.name} - {node.ip}</div>
+	</div>
+	<textarea class="job-textbox">#!/bin/bash</textarea>
+	<div class="job-under">
+		<form>
+			Files:
+			<input type="file">
+		</form>
+		<div class="uploaded-temp"></div>
+		<button>cancel</button>
+		<button>create</button>
+	</div>
+</div>

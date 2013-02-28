@@ -10,9 +10,11 @@
 			{name}<br>
 			{ip}
 			<span class="info-button">i</span>
+			<!-- TODO: use cool unicode -->
+			<span class="job-button">#</span>
 		</div>
 	{:else}
-		No Nodes
+		No Servers
 	{/nodes}
 <br>
 </div>

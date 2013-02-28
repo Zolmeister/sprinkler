@@ -49,15 +49,22 @@ class ServersWidget extends Widget
 class ServersWidgetView extends WidgetView
 	events:
 		'click .info-button': 'info'
+		'click .job-button': 'job'
 	initialize: (model,template, el)->
 		super model, template, el
-		_.bindAll @, 'update', 'info'
+		_.bindAll @, 'update', 'info', 'job', 'getModelFromEv'
 		events.on "serverwidget:render", @update
 	update: (data) ->
 		@render data
-	info: (ev) ->
+	getModelFromEv: (ev) ->
 		id = $(ev.currentTarget).parent().data('id')
-		events.trigger "infowidget:showinfo", @model.get('nodes').get(id)
+		return @model.get('nodes').get(id)
+	info: (ev) ->
+		events.trigger "infowidget:showinfo", @getModelFromEv ev
+	job: (ev) ->
+		events.trigger "jobwidget:show", @getModelFromEv ev
+
+
 
 class InfoWidget extends Widget
 	defaults:
@@ -77,6 +84,28 @@ class InfoWidgetView extends WidgetView
 	update: (data) ->
 		@render data
 
+class JobWidget extends Widget
+	defaults:
+		node: new ServerNode()
+	initialize: ->
+		events.on "jobwidget:show", @update.bind @
+	update: (data) ->
+		@set('node', data)
+		render =
+			node: data.toJSON()
+		events.trigger 'jobwidget:render', render
+
+class JobWidgetView extends WidgetView
+	initialize: (model, template, el)->
+		super model, template, el
+		events.on "jobwidget:render", @update.bind @
+		console.log @$el
+	update: (data) ->
+		@render data
+		new Behave
+    		textarea: @$el.find("textarea")[0]
+		
+
 widgets =
 	serverwidget : 
 		model: ServersWidget
@@ -84,6 +113,10 @@ widgets =
 	infowidget :
 		model: InfoWidget
 		view: InfoWidgetView
+	jobwidget :
+		model: JobWidget
+		view: JobWidgetView
+
 
 @widgetList = []
 
@@ -91,80 +124,12 @@ addWidget = (name, callback) ->
 	el = $('<div/>').appendTo('#mainBox')
 	loadTemplate name , (data) ->
 		widgetList.push new widgets[name].view new widgets[name].model,data,el
-		callback()
+		callback() if callback
 
 addWidget "serverwidget", ->
 	@socket = io.connect()
 	@socket.on "update", (data) -> 
 		events.trigger data.target, data
 
-addWidget "infowidget", (data) ->
-	
-
-###
-class SidePanelView extends Backbone.View
-	initialize: -> 
-
-class MainContentCollection extends Backbone.Collection
-	model: Widget
-
-class WidgetView extends Backbone.View
-	initialize: ->
-		@listenTo @model, 'change', this.render
-		@listenTo @model, 'destroy', this.remove
-		#@render()
-	render: ->
-		console.log "OMG RENDERING"
-		#el.html()
-
-class Widget extends Backbone.Model
-	defaults:
-		name: 'default'
-		width: 300
-		height: 400
-	initialize: ->#(template) ->
-		#self = @
-		#dust.loadSource dust.compile template.data,template.name
-		#dust.render template.name, {name:"Jimmy"}, (err, res) ->
-		#	self.template = res
-		#	console.log "rendered"
-
-class ServerWidget extends Widget
-	initialize: -># (template) ->
-		#super template
-		#events.on "#{template.name}:servers", @displayServers
-
-	#displayServers: (data) ->
-	#	console.log data
-	#	dust.render @template, {data}, (err, res) ->
-	#		console.log "rendered"
-
-class ServerWidgetView extends WidgetView
-
-class MainContentView extends Backbone.View
-	initialize: ->
-		@collection.on 'add', @addWidget, @
-
-	addWidget: (widget) ->
-		widget.render()
-		#@$el.append widget.template
-		
-widgets =
-	"serverwidget" : ServerWidget
-
-addWidget = (name) ->
-	loadTemplate name , (data) ->
-		console.log data
-		mainCollection.add new WidgetView new widgets[name] data
-
-@sidePanel = new SidePanelView
-@mainCollection = new MainContentCollection
-@mainView = new MainContentView
-	el : $ "#mainBox"
-	collection : mainCollection
-
-addWidget "serverwidget"
-###
-###
-onclick = mainContentCollection.add(widgetEditorVIew(this.selection))
-onclick = mainContentCollection.add(widgetInfoView(this.selection))###
+addWidget "infowidget"
+addWidget "jobwidget"

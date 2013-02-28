@@ -1,0 +1,10 @@
+<div class="span4 widget info">
+	<div style="text-align: center">Info</div>
+	<div class="node-info">
+		name: {node.name}<br>
+		user: user<br>
+		ip: {node.ip}<br>
+		status: {node.status}<br>
+		last job: <br>
+	</div>
+</div>
