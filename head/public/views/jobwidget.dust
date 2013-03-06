@@ -1,16 +1,16 @@
 <div class="span5 widget job-create">
+	<div class="close">x</div>
 	<div class="title">
 		<div style="text-align: center">New Job</div>
 		<div style="text-align: center">{node.name} - {node.ip}</div>
 	</div>
-	<textarea class="job-textbox">#!/bin/bash</textarea>
+	Name: <input class="job-name">
+	<textarea class="job-textbox" id="main-upload">#!/bin/bash</textarea>
 	<div class="job-under">
-		<form>
-			Files:
-			<input type="file">
-		</form>
-		<div class="uploaded-temp"></div>
-		<button>cancel</button>
-		<button>create</button>
+		<div class="span7 uploaded-temp" id="extra-upload">
+			Drag and drop files here
+		</div>
+		<button class="btn create">create</button>
+		<button class="btn cancel">cancel</button>
 	</div>
 </div>

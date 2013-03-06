@@ -34,6 +34,10 @@
       return WidgetView.__super__.constructor.apply(this, arguments);
     }
 
+    WidgetView.prototype.events = {
+      'click .close': 'reset'
+    };
+
     WidgetView.prototype.initialize = function(model, template, el) {
       this.self = this;
       this.model = model;
@@ -52,6 +56,11 @@
         return this.$el.attr("class", className);
       };
       return dust.render(this.template.name, options, template.bind(this));
+    };
+
+    WidgetView.prototype.reset = function() {
+      this.$el.html('');
+      return this.$el.removeAttr('class', '');
     };
 
     return WidgetView;
@@ -230,7 +239,9 @@
     }
 
     JobWidget.prototype.defaults = {
-      node: new ServerNode()
+      node: new ServerNode(),
+      files: [],
+      name: ''
     };
 
     JobWidget.prototype.initialize = function() {
@@ -258,17 +269,99 @@
       return JobWidgetView.__super__.constructor.apply(this, arguments);
     }
 
+    JobWidgetView.prototype.events = {
+      'click .create': 'create',
+      'click .cancel': 'cancel',
+      'click .close': 'reset',
+      'keyup .job-name': 'name'
+    };
+
     JobWidgetView.prototype.initialize = function(model, template, el) {
       JobWidgetView.__super__.initialize.call(this, model, template, el);
-      events.on("jobwidget:render", this.update.bind(this));
-      return console.log(this.$el);
+      _.bindAll(this, 'update', 'handleMainFile', 'handleExtraFiles', 'handleExtraFilesOver', 'removeFile', 'renderUploads', 'create', 'cancel');
+      return events.on("jobwidget:render", this.update.bind(this));
     };
 
     JobWidgetView.prototype.update = function(data) {
+      var extraDrop, mainDrop;
       this.render(data);
-      return new Behave({
-        textarea: this.$el.find("textarea")[0]
+      mainDrop = this.$el.find("#main-upload")[0];
+      new Behave({
+        textarea: mainDrop
       });
+      mainDrop.addEventListener('drop', this.handleMainFile, false);
+      extraDrop = this.$el.find("#extra-upload")[0];
+      extraDrop.addEventListener('drop', this.handleExtraFiles, false);
+      return extraDrop.addEventListener('dragover', this.handleExtraFilesOver, false);
+    };
+
+    JobWidgetView.prototype.handleMainFile = function(ev) {
+      var $el, file, reader;
+      $el = this.$el;
+      ev.stopPropagation();
+      ev.preventDefault();
+      file = ev.dataTransfer.files[0];
+      reader = new FileReader();
+      reader.onload = function(e) {
+        var text;
+        text = e.target.result;
+        return $el.find("#main-upload").html(text);
+      };
+      return reader.readAsText(file);
+    };
+
+    JobWidgetView.prototype.handleExtraFiles = function(ev) {
+      var fileList, files, i, _i, _ref;
+      ev.stopPropagation();
+      ev.preventDefault();
+      files = ev.dataTransfer.files;
+      fileList = [];
+      for (i = _i = 0, _ref = files.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+        fileList.push(files[i]);
+      }
+      this.model.set('files', this.model.get('files').concat(fileList));
+      return this.renderUploads();
+    };
+
+    JobWidgetView.prototype.removeFile = function(ev) {
+      var files, id;
+      id = $(ev.currentTarget).data('id');
+      files = this.model.get('files');
+      files.splice(id, 1);
+      this.model.set('files', files);
+      return this.renderUploads();
+    };
+
+    JobWidgetView.prototype.handleExtraFilesOver = function(ev) {
+      return ev.preventDefault();
+    };
+
+    JobWidgetView.prototype.renderUploads = function() {
+      var $upload, names;
+      $upload = this.$el.find("#extra-upload");
+      $upload.css({
+        'line-height': 'normal'
+      });
+      names = function(file, i) {
+        return ("<span class='file' data-id=" + i + "><span class='close-x'>x</span>") + file.name + "</span>";
+      };
+      $upload.html(this.model.get('files').map(names).join("<br>"));
+      $upload.unbind();
+      return $upload.on('click', '.file', this.removeFile);
+    };
+
+    JobWidgetView.prototype.cancel = function() {
+      return this.reset();
+    };
+
+    JobWidgetView.prototype.create = function() {
+      return console.log(this.model);
+    };
+
+    JobWidgetView.prototype.name = function(ev) {
+      var name;
+      name = $(ev.currentTarget).val();
+      return this.model.set('name', name);
     };
 
     return JobWidgetView;

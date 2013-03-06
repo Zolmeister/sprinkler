@@ -9,6 +9,8 @@
 class Widget extends Backbone.Model
 
 class WidgetView extends Backbone.View
+	events:
+		'click .close': 'reset'
 	initialize:(model, template, el) ->
 		@self = @
 		@model = model
@@ -22,6 +24,9 @@ class WidgetView extends Backbone.View
 			@$el.children(":first").children(":first").unwrap()
 			@$el.attr("class", className)
 		dust.render @template.name, options, template.bind(@)
+	reset: ->
+		@$el.html('')
+		@$el.removeAttr('class', '')
 
 
 class ServerNode extends Backbone.Model
@@ -86,7 +91,9 @@ class InfoWidgetView extends WidgetView
 
 class JobWidget extends Widget
 	defaults:
-		node: new ServerNode()
+		node: new ServerNode(),
+		files: [],
+		name: ''
 	initialize: ->
 		events.on "jobwidget:show", @update.bind @
 	update: (data) ->
@@ -96,15 +103,71 @@ class JobWidget extends Widget
 		events.trigger 'jobwidget:render', render
 
 class JobWidgetView extends WidgetView
+	events:
+		'click .create' : 'create'
+		'click .cancel' : 'cancel'
+		'click .close': 'reset'
+		'keyup .job-name': 'name'
 	initialize: (model, template, el)->
 		super model, template, el
+		_.bindAll @, 'update', 'handleMainFile', 'handleExtraFiles',
+			'handleExtraFilesOver', 'removeFile', 'renderUploads', 
+			'create', 'cancel'
 		events.on "jobwidget:render", @update.bind @
-		console.log @$el
 	update: (data) ->
 		@render data
+		mainDrop = @$el.find("#main-upload")[0]
 		new Behave
-    		textarea: @$el.find("textarea")[0]
-		
+    		textarea: mainDrop
+		mainDrop.addEventListener 'drop', @handleMainFile, false
+		extraDrop = @$el.find("#extra-upload")[0]
+		#maybe its the parent div?
+		extraDrop.addEventListener 'drop', @handleExtraFiles, false
+		extraDrop.addEventListener 'dragover', @handleExtraFilesOver, false
+	handleMainFile: (ev) ->
+		$el = @$el
+		ev.stopPropagation()
+		ev.preventDefault()
+		file = ev.dataTransfer.files[0]
+		reader = new FileReader()
+		reader.onload = (e) ->
+			text = e.target.result
+			$el.find("#main-upload").html(text)
+		reader.readAsText(file)
+	handleExtraFiles: (ev) ->
+		ev.stopPropagation()
+		ev.preventDefault()
+		files = ev.dataTransfer.files
+		fileList = []
+		for i in [0...files.length]
+			fileList.push files[i]
+		@model.set 'files', @model.get('files').concat(fileList)
+		@renderUploads()
+	removeFile: (ev) ->
+		id = $(ev.currentTarget).data('id')
+		files = @model.get('files')
+		files.splice(id,1)
+		@model.set 'files', files
+		@renderUploads()
+	handleExtraFilesOver: (ev) ->
+		ev.preventDefault()
+	renderUploads: ->
+		$upload = @$el.find("#extra-upload")
+		$upload.css(
+			'line-height': 'normal'
+			)
+		names = (file, i) ->
+			return "<span class='file' data-id=#{i}><span class='close-x'>x</span>"+file.name+"</span>"
+		$upload.html @model.get('files').map(names).join("<br>")
+		$upload.unbind()
+		$upload.on 'click', '.file', @removeFile
+	cancel: ->
+		@reset()
+	create: ->
+		console.log @model
+	name: (ev) ->
+		name = $(ev.currentTarget).val()
+		@model.set 'name', name
 
 widgets =
 	serverwidget : 
