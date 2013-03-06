@@ -48,6 +48,8 @@ class Client:
         self.id = str(doc["_id"]) # The mongo ID in string form
         self.hostname = doc["hostname"]
         self.default_job_username = "lane"
+        self.status = doc["status"]
+        self.db = db
 
         # State information
         self.jobs = []
@@ -58,14 +60,24 @@ class Client:
         self.conn = LawnConnection(self.hostname)
         self.finished_jobs = []
 
+    def installByQuery(self):
+        self.conn.sendPacket({"action": "getStatus"})
+
     def install(self, ssh_user, ssh_pw, root_pw):
         install_lawn.install(self.hostname, ssh_user, ssh_pw, root_pw)
+        self.installByQuery()
         pass
-        
+
     def json(self):
         return {}
 
     def update(self):
+        if self.status == "installing":
+            if not self.conn.isWaitingOnReply:
+                self.status = "ready"
+                self.db.clients.update({"_id": ObjectId(self.id)}, {"$set": {"status": "ready"}})
+            return
+
         if not self.conn.isWaitingOnReply and len(self.jobs) > 0:
             # Assign a new job!
             self.conn.sendPacket({"cmd": self.jobs[0].cmd})
@@ -118,6 +130,16 @@ def createClient(doc):
 
     # Add it to the memory database
     c = Client(db, doc)
+
+    if "remote_auth_method" in doc:
+        if doc["remote_auth_method"] == "query":
+            c.installByQuery()
+            clients[cid] = c
+            return (cid, "")
+        elif doc["remote_auth_method"] == "sudo":
+            # Fall-through
+            pass
+        pass
 
     # Also, we should SSH in and deploy a lawn node.
     try:

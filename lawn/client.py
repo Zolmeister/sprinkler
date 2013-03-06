@@ -5,11 +5,17 @@ import socket
 import threading
 import json
 import struct
+import subprocess
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind(("", 4321))
 s.listen(10)
+
+def reply(s, d):
+    ret_s = json.dumps(d)
+    s.send(struct.pack("I", len(ret_s)))
+    s.send(ret_s)
 
 while True:
     s2, addr = s.accept()
@@ -19,13 +25,16 @@ while True:
     cmd = json.loads(s2.recv(l))
     print cmd
 
-    import subprocess
+    if "cmd" in cmd:
+        args = cmd.get("args", [])
+        proc = subprocess.Popen([cmd["cmd"]]+args, stdout=subprocess.PIPE)
+        ret = proc.communicate()[0]
 
-    args = cmd.get("args", [])
-    proc = subprocess.Popen([cmd["cmd"]]+args, stdout=subprocess.PIPE)
-    ret = proc.communicate()[0]
-
-    ret_s = json.dumps({"retval": ret})
-    s2.send(struct.pack("I", len(ret_s)))
-    s2.send(ret_s)
+        ret_s = json.dumps({"retval": ret})
+        s2.send(struct.pack("I", len(ret_s)))
+        s2.send(ret_s)
+    elif "action" in cmd:
+        if cmd["action"] == "getState":
+            reply(s2, {"status": "OK"})
+            pass
     s2.close()
