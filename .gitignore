@@ -1,4 +1,5 @@
 *~
 head/node_modules
+head/npm-debug.log
 hose/sprinkler-hose
 *.pyc

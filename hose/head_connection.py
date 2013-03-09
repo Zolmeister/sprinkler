@@ -1,22 +1,24 @@
-import pika
-from collections import deque
+import threading
+import time
+import zmq
+
 class Connector:
-	def __init__(self):
-		pass
+    def __init__(self):
+        self.context = zmq.Context()
+        #self.thread_rep = threading.Thread(target=self.recieve)
+        
 
-	def recieve(self):
-	    connection = pika.BlockingConnection(pika.ConnectionParameters(
-		        host='localhost'))
-	    channel = connection.channel()
-	    channel.queue_declare(queue='request_queue')
-	    method_frame, header_frame, body = channel.basic_get(queue = 'request_queue')        
-	    if not method_frame or method_frame.NAME == 'Basic.GetEmpty':
-	        connection.close()
-	        return ''
-	    else:            
-	        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-	        connection.close() 
-	        return body
+    def recieve(self):
+        #self.thread_rep.start()
+        rep_sock = self.context.socket(zmq.REP)
+        rep_sock.connect("tcp://127.0.0.1:5556")
+        message = rep_sock.recv()
+        while message:
+            print "received request '" + message + "'"
+            rep_sock.send("Polo!")
+            message = rep_sock.recv()
 
-	def send(self, s):
-		pass
+
+connector = Connector()
+while True:
+    connector.recieve()
