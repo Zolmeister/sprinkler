@@ -7,6 +7,9 @@ class Job:
         self.cmd = spec["cmd"]
         pass
 
+    def json(self):
+        return {"id": self.jid, "cmd": self.cmd}
+
     def setReturnValue(self, v):
         self.db.jobs.update({"_id": self.jid}, {"$set": {"retval": v}})
         pass

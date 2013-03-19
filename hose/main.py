@@ -70,7 +70,10 @@ class Client:
         pass
 
     def json(self):
-        return {}
+        jobs = []
+        for j in jobs:
+            jobs.append(j.json())
+        return {"id": self.id, "hostname": self.hostname, "status": self.status, "jobs": jobs}
 
     def update(self):
         if self.status == "installing":
