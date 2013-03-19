@@ -16,7 +16,16 @@ def perform(tn,d):
 tn = telnetlib.Telnet("localhost", 7777)
 print getReply(tn)
 
-send_d = {"createClient": {"hostname": "14.14.1fs4.14", "default": "lane", "ssh_user": "lane", "ssh_pw": "password", "root_pw": "password", "jobs": []}}
+send_d = {
+    "createClient": {
+        "hostname": "14.14.1fs4.14", 
+        "default": "lane", 
+        "ssh_user": "lane", 
+        "ssh_pw": "password", 
+        "root_pw": "password", 
+        "jobs": []
+    }
+}
 
 print "Testing invalid createClient URL:"
 tn.write(json.dumps(send_d)+"\n")

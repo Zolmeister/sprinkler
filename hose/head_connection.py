@@ -5,20 +5,20 @@ import zmq
 class Connector:
     def __init__(self):
         self.context = zmq.Context()
+        self.pull_sock = self.context.socket(zmq.PULL)
+        self.pull_sock.connect("tcp://127.0.0.1:5556")
+        self.push_sock = self.context.socket(zmq.PUSH)
+        self.push_sock.connect("tcp://127.0.0.1:5557")
+        self.poller = zmq.Poller()
+        self.poller.register(self.pull_sock, zmq.POLLIN)
         #self.thread_rep = threading.Thread(target=self.recieve)
-        
 
     def recieve(self):
         #self.thread_rep.start()
-        rep_sock = self.context.socket(zmq.REP)
-        rep_sock.connect("tcp://127.0.0.1:5556")
-        message = rep_sock.recv()
-        while message:
-            print "received request '" + message + "'"
-            rep_sock.send("Polo!")
-            message = rep_sock.recv()
-
-
-connector = Connector()
-while True:
-    connector.recieve()
+        if self.poller.poll(1):
+            return self.pull_sock.recv()
+        else:
+            return None
+            
+    def send(self, msg):
+        self.push_sock.send(msg, zmq.NOBLOCK)

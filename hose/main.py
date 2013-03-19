@@ -2,7 +2,8 @@ import paramiko #ssh library
 import socket
 import json
 import struct
-if False:
+import settings
+if not settings.DEBUG:
     from head_connection import Connector
 else:
     from testing_connector import Connector
@@ -192,7 +193,7 @@ while 1:
         elif "getClientList" in cmd:
             d = {"clientList": []}
             for c in clients:
-                d["clientList"].append(c.json())
+                d["clientList"].append(clients[c].json())
             reply(d)
         elif "removeClient" in cmd:
             # Remove the client!

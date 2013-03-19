@@ -82,16 +82,3 @@ io.sockets.on('connection', socketConnection)
 server.listen(app.get('port'), function() {
     console.log("Express server listening on port " + app.get('port'))
 })
-
-var zmq = require('zmq')
-  , socket = zmq.socket('req');
-
-socket.bind('tcp://127.0.0.1:5556', function(err) {
-    if (err) throw err;
-    console.log('connected to zeromq');
-    //socket.send(value);
-
-    socket.on('message', function(data) {
-        console.log(socket.identity + ': answer data ' + data);
-    });
-})
