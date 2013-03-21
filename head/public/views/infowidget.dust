@@ -4,7 +4,7 @@
 	<div class="node-info">
 		name: {node.name}<br>
 		user: user<br>
-		ip: {node.ip}<br>
+		ip: {node.hostname}<br>
 		status: {node.status}<br>
 		last job: <br>
 	</div>

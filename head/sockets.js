@@ -16,8 +16,8 @@ module.exports = function(socket) {
     pull_socket.on('message', function(data) {
         //console.log(zsocket.identity + ': answer data ' + data);
         console.log("Hose message incoming:")
-        console.log(data)
         console.log(JSON.parse(data))
+        socket.emit('update', JSON.parse(data))
         /*socket.emit('update', {
             target: 'serverwidget:update',
             nodes: [

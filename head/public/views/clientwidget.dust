@@ -1,0 +1,12 @@
+<div class="span3 widget client-create">
+	<div class="close">x</div>
+	<div class="title">
+		<div style="text-align: center">New Client</div>
+	</div>
+	Name:<br>
+    <input class="client-name"><br>
+    IP/Hostname:<br>
+    <input clas="client-hostname"><br>
+    default username? <br>
+    passwords?<br>
+</div>

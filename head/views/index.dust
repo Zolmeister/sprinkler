@@ -3,6 +3,11 @@
 <link href="/css/index.css" rel="stylesheet">
 {/css}
 {<js}
+<script src="/js/widget.js"></script>
+<script src="/js/jobwidget.js"></script>
+<script src="/js/infowidget.js"></script>
+<script src="/js/serverwidget.js"></script>
+<script src="/js/clientwidget.js"></script>
 <script src="/js/index.js"></script>
 {/js}
 {<container}
