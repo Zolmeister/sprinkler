@@ -1,7 +1,9 @@
 argparse==1.2.1
+distribute==0.6.24
 paramiko==1.9.0
 pika==0.9.8
 pycrypto==2.6
+pymongo==2.4
+pyzmq==13.0.0
 uuid==1.30
 wsgiref==0.1.2
-pymongo==2.4.0
