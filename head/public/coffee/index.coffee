@@ -1,13 +1,13 @@
 @loadTemplate =  (name, callback) ->
     $.get "/views/#{name}.dust", (data) ->
-        callback 
+        callback
             data : data
             name : name
 
 @events = _.clone Backbone.Events
 
 widgets =
-    serverwidget : 
+    serverwidget :
         model: Sprinkler.ServersWidget
         view: Sprinkler.ServersWidgetView
     infowidget :
@@ -33,11 +33,24 @@ socketUpdate = (data) ->
     if data.clientList
         events.trigger 'serverwidget:update', data.clientList
             
+
+@socket = io.connect()
+@socket.on "update", socketUpdate
+
 addWidget "serverwidget", ->
-    @socket = io.connect()
-    @socket.on "update", socketUpdate
-    
+    @socket.emit 'getClientList'
+
 addWidget "infowidget"
 addWidget "jobwidget"
 addWidget "clientwidget"
 
+createClient = (hostname, def, ssh_user, ssh_pw, root_pw) ->
+    @socket.emit 'createClient',
+        "hostname": hostname,
+        "default": def,
+        "ssh_user": ssh_user,
+        "ssh_pw": ssh_pw,
+        "root_pw": root_pw
+        
+events.on "createClient", createClient.bind @
+        

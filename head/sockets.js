@@ -54,4 +54,14 @@ module.exports = function(socket) {
             ]
         })*/
     });
+       
+    socket.on('createClient', function(data){
+        push_socket.send(JSON.stringify(data));
+    })
+    
+    socket.on('getClientList', function(){
+        push_socket.send(JSON.stringify(getClients));
+    })
+        
+    
 }

@@ -43,14 +43,14 @@
 
     JobWidgetView.prototype.events = {
       'click .create': 'create',
-      'click .cancel': 'cancel',
+      'click .cancel': 'reset',
       'click .close': 'reset',
       'keyup .job-name': 'name'
     };
 
     JobWidgetView.prototype.initialize = function(model, template, el) {
       JobWidgetView.__super__.initialize.call(this, model, template, el);
-      _.bindAll(this, 'update', 'handleMainFile', 'handleExtraFiles', 'handleExtraFilesOver', 'removeFile', 'renderUploads', 'create', 'cancel');
+      _.bindAll(this, 'update', 'handleMainFile', 'handleExtraFiles', 'handleExtraFilesOver', 'removeFile', 'renderUploads', 'create');
       return events.on("jobwidget:render", this.update.bind(this));
     };
 
@@ -120,10 +120,6 @@
       $upload.html(this.model.get('files').map(names).join("<br>"));
       $upload.unbind();
       return $upload.on('click', '.file', this.removeFile);
-    };
-
-    JobWidgetView.prototype.cancel = function() {
-      return this.reset();
     };
 
     JobWidgetView.prototype.create = function() {

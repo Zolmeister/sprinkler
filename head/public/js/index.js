@@ -1,5 +1,5 @@
 (function() {
-  var addWidget, socketUpdate, widgets;
+  var addWidget, createClient, socketUpdate, widgets;
 
   this.loadTemplate = function(name, callback) {
     return $.get("/views/" + name + ".dust", function(data) {
@@ -51,9 +51,12 @@
     }
   };
 
+  this.socket = io.connect();
+
+  this.socket.on("update", socketUpdate);
+
   addWidget("serverwidget", function() {
-    this.socket = io.connect();
-    return this.socket.on("update", socketUpdate);
+    return this.socket.emit('getClientList');
   });
 
   addWidget("infowidget");
@@ -61,5 +64,17 @@
   addWidget("jobwidget");
 
   addWidget("clientwidget");
+
+  createClient = function(hostname, def, ssh_user, ssh_pw, root_pw) {
+    return this.socket.emit('createClient', {
+      "hostname": hostname,
+      "default": def,
+      "ssh_user": ssh_user,
+      "ssh_pw": ssh_pw,
+      "root_pw": root_pw
+    });
+  };
+
+  events.on("createClient", createClient.bind(this));
 
 }).call(this);
