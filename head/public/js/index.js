@@ -65,8 +65,9 @@
 
   addWidget("clientwidget");
 
-  createClient = function(hostname, def, ssh_user, ssh_pw, root_pw) {
+  createClient = function(name, hostname, def, ssh_user, ssh_pw, root_pw) {
     return this.socket.emit('createClient', {
+      "name": name,
       "hostname": hostname,
       "default": def,
       "ssh_user": ssh_user,

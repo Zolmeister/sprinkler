@@ -9,7 +9,7 @@
         IP/Hostname:<br>
         <input name="client-hostname"><br>
         default user:<br>
-        <input name="default"><br>
+        <input name="def"><br>
         ssh username:<br>
         <input name="ssh_user"><br>
         ssh password:<br>

@@ -26,6 +26,6 @@ class Sprinkler.ClientWidgetView extends Sprinkler.WidgetView
         obj = {}
         for input in inputs
             obj[input.name]=input.value
-        events.trigger 'createClient', obj
+        events.trigger 'createClient', obj['client-name'], obj['client-hostname'], obj.def, obj.ssh_user, obj.ssh_pw, obj.root_pw
         @reset()
         

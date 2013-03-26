@@ -44,13 +44,16 @@ addWidget "infowidget"
 addWidget "jobwidget"
 addWidget "clientwidget"
 
-createClient = (hostname, def, ssh_user, ssh_pw, root_pw) ->
+createClient = (name, hostname, def, ssh_user, ssh_pw, root_pw) ->
     @socket.emit 'createClient',
-        "hostname": hostname,
-        "default": def,
-        "ssh_user": ssh_user,
-        "ssh_pw": ssh_pw,
-        "root_pw": root_pw
+            "name": name
+            "hostname": hostname
+            "default": def
+            "ssh_user": ssh_user
+            "ssh_pw": ssh_pw
+            "root_pw": root_pw
+        
+        
         
 events.on "createClient", createClient.bind @
         

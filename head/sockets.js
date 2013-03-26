@@ -56,7 +56,11 @@ module.exports = function(socket) {
     });
        
     socket.on('createClient', function(data){
-        push_socket.send(JSON.stringify(data));
+        var create = {
+            createClient: data
+        }
+        console.log(create)
+        push_socket.send(JSON.stringify(create));
     })
     
     socket.on('getClientList', function(){

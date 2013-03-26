@@ -43,7 +43,6 @@
         }
         return _results;
       })());
-      console.log("got update");
       console.log(this.get('nodes'));
       render = {
         nodes: this.get('nodes').toJSON()

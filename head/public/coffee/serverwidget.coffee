@@ -8,7 +8,6 @@ class Sprinkler.ServersWidget extends Sprinkler.Widget
         events.on "serverwidget:update", @update.bind @
     update: (data) ->
         @get('nodes').update(new Sprinkler.ServerNode node for node in data)
-        console.log "got update"
         console.log @get('nodes')
         render =
             nodes: @get('nodes').toJSON()
