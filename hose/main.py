@@ -130,6 +130,11 @@ def createClient(doc):
         doc["_id"] = ObjectId(doc["force_id"])
         del doc["force_id"]
     doc["status"] = "installing"
+
+    # Check to see if the specified hostname already exists
+    if db.clients.find_one({"hostname": doc["hostname"]}):
+        return (None, "duplicate creation of %s"%doc["hostname"])
+
     cid = str(db.clients.insert(doc))
 
     # Add it to the memory database
@@ -141,7 +146,7 @@ def createClient(doc):
             clients[cid] = c
             return (cid, "")
         elif doc["remote_auth_method"] == "sudo":
-            # Fall-through
+            # Fall-through to the SSH method below
             pass
         pass
 
