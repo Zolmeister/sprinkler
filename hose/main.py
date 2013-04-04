@@ -64,9 +64,38 @@ class Client:
     def installByQuery(self):
         self.conn.sendPacket({"action": "getStatus"})
 
-    def install(self, ssh_user, ssh_pw, root_pw):
-        install_lawn.install(self.hostname, ssh_user, ssh_pw, root_pw)
-        self.installByQuery()
+    #def install(self, ssh_user, ssh_pw, root_pw):
+    #    install_lawn.install(self.hostname, ssh_user, ssh_pw, root_pw)
+    #    self.installByQuery()
+    #    pass
+
+    def install(self, doc):
+        #if "sshPassword" in doc and "publicKey" in doc:
+        if "sshUser" not in doc:
+            # We have a malformed doc!
+            return
+
+        use_pkey = doc.get("publicKey", False)
+        use_sudo = True
+        if "rootPassword" in doc:
+            use_sudo = False
+        install_lawn.install2(self.hostname, doc["sshUser"], use_pkey, use_sudo,
+                              root_pw=doc.get("rootPassword", None),
+                              ssh_pw=doc.get("sshPassword", None),
+                              sudo_pw=doc.get("sshPassword", None))
+        """
+        if use_pkey:
+            if "rootPassword" in doc:
+                # Install using keyed ssh and su authentication
+                pass
+            else:
+                # Install using keyed ssh and sudo
+                pass
+            pass
+        else:
+            if "rootPassword" in doc:
+                #
+                """
         pass
 
     def json(self):
@@ -152,7 +181,8 @@ def createClient(doc):
 
     # Also, we should SSH in and deploy a lawn node.
     try:
-        c.install(doc["ssh_user"], doc["ssh_pw"], doc["root_pw"])
+        #c.install(doc["ssh_user"], doc["ssh_pw"], doc["root_pw"])
+        c.install(doc)
     except socket.error:
         print "Could not install the lawn."
         return (cid, "socket error while installing lawn. Check network connection.")
@@ -207,13 +237,21 @@ while 1:
             # Remove the client!
             removeClient(cmd["removeClient"])
             pass
-        elif "createClient" in cmd:
+        elif "newClient" in cmd:
             # Create a client!
             cid = createClient(cmd["createClient"])
             if not cid[0]:
-                reply({"id": None, "error": cid[1]})
+                reply({"success": False, "error": cid[1]})
             else:
-                reply({"id": cid[0]})
+                reply({"success": True})
+                clientList = []
+                for c in clients:
+                    clientList.append(clients[c].json())
+                reply({"clientList": clientList})
+            #if not cid[0]:
+            #    reply({"id": None, "error": cid[1]})
+            #else:
+            #    reply({"id": cid[0]})
         elif "newJob" in cmd:
             # Add a job to (someone's) queue
             jid = createJob(cmd["newJob"]["client_id"], cmd["newJob"]["job"])

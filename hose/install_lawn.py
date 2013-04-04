@@ -1,13 +1,34 @@
 import paramiko, time
 
-def install(hostname, ssh_user, ssh_pw, root_pw):
-    client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.WarningPolicy())
+def get_private_key():
+    try:
+        f = open("id_rsa")
+        key = paramiko.RSAKey.from_private_key(f)
+        f.close()
+        return key
+    except:
+        # We have to create it...
+        # TODO: Add more bits!
+        key = paramiko.RSAKey.generate(1024)
+        key.write_private_key_file("id_rsa")
+        return key
+    pass
 
-    client.connect(hostname, 22, ssh_user, ssh_pw)
-    chan = client.invoke_shell()
+# Either we use sudo or not
+def authenticate_on_channel(chan, use_sudo, password):
+    if use_sudo:
+        chan.send("sudo su\n")
+        chan.send(password)
+        chan.send("\n")
+        time.sleep(1)
+    else:
+        chan.send("su root\n")
+        chan.send(password)
+        chan.send("\n")
+        time.sleep(1)
 
+# Returns (True, ...) on success, (False, ...) otherwise
+def install_to_channel(chan, use_sudo, password):
     # Quick test that we can send commands
     time.sleep(1)
     chan.send("uptime\n")
@@ -43,10 +64,11 @@ def install(hostname, ssh_user, ssh_pw, root_pw):
     time.sleep(1)
 
     # Sudo
-    chan.send("sudo su\n")
-    chan.send(root_pw)
-    chan.send("\n")
-    time.sleep(1)
+    authenticate_on_channel(chan, use_sudo, password)
+    #chan.send("sudo su\n")
+    #chan.send(root_pw)
+    #chan.send("\n")
+    #time.sleep(1)
 
     # Copy the files into their respective locations
     chan.send("cp client.py /usr/bin/sprinkler.py\n")
@@ -73,6 +95,38 @@ def install(hostname, ssh_user, ssh_pw, root_pw):
     time.sleep(1)
 
     # Print out everything that the remote said
-    return chan.recv(32000)
+    return (True, chan.recv(32000))
+
+def install(hostname, ssh_user, ssh_pw, root_pw):
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.WarningPolicy())
+
+    client.connect(hostname, 22, ssh_user, ssh_pw)
+    chan = client.invoke_shell()
+
+    install_to_channel(chan, True, ssh_pw)
     #print chan.recv(32000)
+    pass
+
+def install2(hostname, ssh_user, use_pkey, use_sudo, root_pw=None, ssh_pw=None,
+             sudo_pw=None):
+    if use_pkey:
+        # Create a client using our private key
+        key = get_private_key()
+
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.WarningPolicy())
+
+        client.connect(hostname, 22, username=ssh_user, pkey=key)
+        chan = client.invoke_shell()
+
+        pw = None
+        if use_sudo:
+            pw = sudo_pw
+        else:
+            pw = root_pw
+        install_to_channel(chan, use_sudo, pw)
+        pass
     pass
