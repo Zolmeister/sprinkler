@@ -8,14 +8,14 @@
         <input name="client-name"><br>
         IP/Hostname:<br>
         <input name="client-hostname"><br>
-        default user:<br>
-        <input name="def"><br>
         ssh username:<br>
-        <input name="ssh_user"><br>
+        <input name="sshUser"><br>
         ssh password:<br>
-        <input name="ssh_pw"><br>
+        <input name="sshPassword"><br>
         root password:<br>
-        <input name="root_pw"><br>
+        <input name="rootPassword"><br>
+        public key:
+        <input name="publicKey" type="checkbox" style="width:auto"><br>
         <button class="btn cancel">Cancel</button>
         <button class="btn create">Create</button>
     </form>

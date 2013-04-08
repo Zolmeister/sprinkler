@@ -15,7 +15,9 @@
     };
 
     InfoWidget.prototype.initialize = function() {
-      return events.on("infowidget:showinfo", this.update.bind(this));
+      events.on("infowidget:showinfo", this.update.bind(this));
+      events.on("infowidget:clientJobs", this.clientJobs.bind(this));
+      return events.on("infowidget:clientCurrentJob", this.clientCurrentJob.bind(this));
     };
 
     InfoWidget.prototype.update = function(data) {
@@ -26,6 +28,19 @@
       };
       return events.trigger('infowidget:render', render);
     };
+
+    InfoWidget.prototype.clientJobs = function(data) {
+      var render;
+      this.get('node').set({
+        jobs: data
+      });
+      render = {
+        node: data.toJSON()
+      };
+      return events.trigger('infowidget:render', render);
+    };
+
+    InfoWidget.prototype.clientCurrentJob = function(data) {};
 
     return InfoWidget;
 
