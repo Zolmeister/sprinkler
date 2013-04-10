@@ -73,12 +73,14 @@ class Client:
         #if "sshPassword" in doc and "publicKey" in doc:
         if "sshUser" not in doc:
             # We have a malformed doc!
+            print "malformed doc"
             return
 
         use_pkey = doc.get("publicKey", False)
         use_sudo = True
         if "rootPassword" in doc:
             use_sudo = False
+        print "running install"
         install_lawn.install2(self.hostname, doc["sshUser"], use_pkey, use_sudo,
                               root_pw=doc.get("rootPassword", None),
                               ssh_pw=doc.get("sshPassword", None),
@@ -155,14 +157,17 @@ def reply(d):
 # - Default User: The user to run as.
 # - Job queue: A queue of jobs, which defaults to []
 def createClient(doc):
+    print "creating client"
     doc["job_queue"] = []
     if "force_id" in doc:
         doc["_id"] = ObjectId(doc["force_id"])
         del doc["force_id"]
     doc["status"] = "installing"
+    print "installing"
 
     # Check to see if the specified hostname already exists
     if db.clients.find_one({"hostname": doc["hostname"]}):
+        print "duplicate creation"
         return (None, "duplicate creation of %s"%doc["hostname"])
 
     cid = str(db.clients.insert(doc))
@@ -246,7 +251,7 @@ while 1:
             pass
         elif "newClient" in cmd:
             # Create a client!
-            cid = createClient(cmd["createClient"])
+            cid = createClient(cmd["newClient"])
             if not cid[0]:
                 reply({"success": False, "error": cid[1]})
             else:
