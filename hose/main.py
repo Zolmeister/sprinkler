@@ -109,6 +109,7 @@ class Client:
             if not self.conn.isWaitingOnReply:
                 self.status = "ready"
                 self.db.clients.update({"_id": ObjectId(self.id)}, {"$set": {"status": "ready"}})
+                # TODO: Report back to the head when this happens.
             return
 
         if not self.conn.isWaitingOnReply and len(self.jobs) > 0:
@@ -210,6 +211,12 @@ def getJobInformation(jid):
     del d["_id"]
     return d
 
+def getClientJobs(cid):
+    jobs = []
+    for j in clients[cid].jobs:
+        jobs.append(j.json())
+    return jobs
+
 # Yay for event loops!
 con = Connector()
 while 1:
@@ -263,6 +270,8 @@ while 1:
         elif "getJob" in cmd:
             # Retreive information about a job
             reply(getJobInformation(cmd["getJob"]))
+        elif "getClientJobs" in cmd:
+            reply(getClientJobs(cmd["getClientJobs"]["id"]))
     except pika.exceptions.AMQPConnectionError:
         print "We aren't connected to the head."
         pass # We probably aren't connected
