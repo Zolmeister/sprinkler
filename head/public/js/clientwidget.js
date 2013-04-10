@@ -63,7 +63,7 @@
         input = inputs[_i];
         obj[input.name] = input.value;
       }
-      events.trigger('createClient', obj['client-name'], obj['client-hostname'], obj.def, obj.ssh_user, obj.ssh_pw, obj.root_pw);
+      events.trigger('createClient', obj['client-name'], obj['client-hostname'], obj.sshUser, obj.publicKey, obj.sshPassword, obj.rootPassword);
       return this.reset();
     };
 
