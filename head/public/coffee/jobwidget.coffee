@@ -30,7 +30,6 @@ class Sprinkler.JobWidgetView extends Sprinkler.WidgetView
             textarea: mainDrop
         mainDrop.addEventListener 'drop', @handleMainFile, false
         extraDrop = @$el.find("#extra-upload")[0]
-        #maybe its the parent div?
         extraDrop.addEventListener 'drop', @handleExtraFiles, false
         extraDrop.addEventListener 'dragover', @handleExtraFilesOver, false
     handleMainFile: (ev) ->
@@ -71,7 +70,11 @@ class Sprinkler.JobWidgetView extends Sprinkler.WidgetView
         $upload.unbind()
         $upload.on 'click', '.file', @removeFile
     create: ->
-        console.log @model
+        name = @model.get('name')
+        id = @model.get('node').id
+        command = @$el.find('#main-upload').val()
+        events.trigger 'createJob', name, id, command
+        @reset()
     name: (ev) ->
         name = $(ev.currentTarget).val()
         @model.set 'name', name

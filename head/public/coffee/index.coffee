@@ -75,7 +75,8 @@ createJob = (name, clientId, command) ->
     sendSocket 'newJob',
         name: name,
         clientId: clientId,
-        command: command
+        command: 
+            sh: command
 
 commandObj = (dir, user, sh) ->
     return {

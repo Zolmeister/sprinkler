@@ -123,7 +123,12 @@
     };
 
     JobWidgetView.prototype.create = function() {
-      return console.log(this.model);
+      var command, id, name;
+      name = this.model.get('name');
+      id = this.model.get('node').id;
+      command = this.$el.find('#main-upload').val();
+      events.trigger('createJob', name, id, command);
+      return this.reset();
     };
 
     JobWidgetView.prototype.name = function(ev) {

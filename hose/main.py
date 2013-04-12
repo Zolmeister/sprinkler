@@ -37,7 +37,9 @@ class LawnConnection:
             return None # Nothing was readable
 
         # Recieve the return value
-        l = struct.unpack("I", self.sock.recv(4))[0]
+        recv = self.sock.recv(4)
+        print "recv", recv
+        l = struct.unpack("I", recv)[0]
         ret = self.sock.recv(l)
         self.isWaitingOnReply = False
         print ret
@@ -266,7 +268,7 @@ while 1:
             #    reply({"id": cid[0]})
         elif "newJob" in cmd:
             # Add a job to (someone's) queue
-            jid = createJob(cmd["newJob"]["client_id"], cmd["newJob"]["job"])
+            jid = createJob(cmd["newJob"]["clientId"], cmd["newJob"])
             reply({"id": jid, "success": True})
         elif "removeJob" in cmd:
             # Remove/cancel a job from the queue

@@ -110,7 +110,9 @@
     return sendSocket('newJob', {
       name: name,
       clientId: clientId,
-      command: command
+      command: {
+        sh: command
+      }
     });
   };
 
