@@ -56,7 +56,7 @@
       events.trigger('serverwidget:updateList', data.clientList);
     }
     if (data.clientJobs) {
-      events.trigget('infowidget:clientJobs', data.clientJobs);
+      events.trigger('infowidget:clientJobs', data.clientJobs);
     }
     if (data.clientCurrentJob) {
       events.trigger('infowidget:clientCurrentJob', data.clientCurrentJob);
@@ -82,6 +82,7 @@
 
   sendSocket = function(label, obj) {
     var socketObj;
+    console.log("socket: " + label);
     socketObj = {};
     socketObj[label] = obj;
     return this.socket.emit('message', socketObj);

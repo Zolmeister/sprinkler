@@ -4,14 +4,22 @@ class Sprinkler.ServerNodeCollection extends Backbone.Collection
 class Sprinkler.ServersWidget extends Sprinkler.Widget
     defaults:
         nodes: new Sprinkler.ServerNodeCollection()
+        statuses: 
+            ready: 0
+            running: 0
+            error: 0
     initialize: ->
         events.on "serverwidget:updateList", @updateList.bind @
         events.on "serverwidget:updateClient", @updateClient.bind @
     updateList: (data) ->
         @get('nodes').update(new Sprinkler.ServerNode node for node in data)
-        console.log @get('nodes')
+        statuses = @get('statuses')
+        for node in @get('nodes').models
+            cnt = statuses[node.get('status')]
+            statuses[node.get('status')] = cnt+1
         render =
             nodes: @get('nodes').toJSON()
+            statuses: @get('statuses')
         events.trigger "serverwidget:render", render
     updateClient: (data) ->
         if @get('nodes').get(data.id)
@@ -20,6 +28,7 @@ class Sprinkler.ServersWidget extends Sprinkler.Widget
             @get('nodes').add(new Sprinkler.ServerNode data)
         render =
             nodes: @get('nodes').toJSON()
+            statuses: @get('statuses')
         events.trigger "serverwidget:render", render
 
 class Sprinkler.ServersWidgetView extends Sprinkler.WidgetView

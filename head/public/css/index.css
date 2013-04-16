@@ -135,6 +135,13 @@ input {
   padding-left: 10px;
   background-color: #2dd700;
 }
+.jobCommand {
+  padding: 0px;
+  width: 100%;
+}
+.jobName {
+  text-align: center;
+}
 .job-create {
   background-color: #2dd700;
 }

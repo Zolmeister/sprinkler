@@ -9,12 +9,15 @@ class Sprinkler.InfoWidget extends Sprinkler.Widget
         @set('node',data)
         render =
             node: data.toJSON()
+            
+        events.trigger "getClientJobs", data.id
         events.trigger 'infowidget:render', render
     clientJobs: (data) ->
+        console.log "raoar", data.jobs
         @get('node').set
-            jobs: data
+            jobs: data.jobs
         render =
-            node: data.toJSON()
+            node: @get('node').toJSON()
         events.trigger 'infowidget:render', render
     clientCurrentJob: (data) ->
         return

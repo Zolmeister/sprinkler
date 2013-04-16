@@ -1,9 +1,9 @@
 <div class="span3 widget servers">
     <div class="add-client">+</div>
 	<div class="status">
-		<span class="dot ready"></span>: 2
-		<span class="dot running"></span>: 0
-		<span class="dot error"></span>: 0
+		<span class="dot ready"></span>:{statuses.ready} 
+		<span class="dot running"></span>:{statuses.running} 
+		<span class="dot error"></span>:{statuses.error} 
         
 	</div>
 	{#nodes}

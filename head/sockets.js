@@ -16,7 +16,35 @@ module.exports = function(socket) {
     });
     
     function send(obj){
-        console.log(JSON.stringify(obj))
+        if(obj.getClientJobs){
+            socket.emit('update',{
+                "clientJobs":{
+                    clientId: 'clientId',
+                    "jobs": [
+                        {
+                            id: 'jobId',
+                            name: 'jobname',
+                            command: {
+                                dir: 'dir',
+                                user: 'user',
+                                sh: 'cd roar; echo "hello"'
+                            }
+                        },
+                        {
+                            id: 'jobId',
+                            name: 'jobname',
+                            command: {
+                                dir: 'dir',
+                                user: 'user',
+                                sh: 'cd roar; echo "hello"'
+                            }
+                        }
+                    ]
+                }
+            })
+            return
+        }
+        console.log(obj)
         push_socket.send(JSON.stringify(obj));
     }
     

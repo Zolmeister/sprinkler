@@ -37,7 +37,7 @@ socketUpdate = (data) ->
     if data.clientList
         events.trigger 'serverwidget:updateList', data.clientList
     if data.clientJobs
-        events.trigget 'infowidget:clientJobs', data.clientJobs
+        events.trigger 'infowidget:clientJobs', data.clientJobs
     if data.clientCurrentJob
         events.trigger 'infowidget:clientCurrentJob', data.clientCurrentJob
     if data.publicKey
@@ -54,6 +54,7 @@ addWidget "jobwidget"
 addWidget "clientwidget"
 
 sendSocket = (label, obj) ->
+    console.log "socket: "+label
     socketObj = {}
     socketObj[label] = obj
     @socket.emit 'message', socketObj

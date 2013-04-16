@@ -25,7 +25,12 @@
     }
 
     ServersWidget.prototype.defaults = {
-      nodes: new Sprinkler.ServerNodeCollection()
+      nodes: new Sprinkler.ServerNodeCollection(),
+      statuses: {
+        ready: 0,
+        running: 0,
+        error: 0
+      }
     };
 
     ServersWidget.prototype.initialize = function() {
@@ -34,7 +39,7 @@
     };
 
     ServersWidget.prototype.updateList = function(data) {
-      var node, render;
+      var cnt, node, render, statuses, _i, _len, _ref;
       this.get('nodes').update((function() {
         var _i, _len, _results;
         _results = [];
@@ -44,9 +49,16 @@
         }
         return _results;
       })());
-      console.log(this.get('nodes'));
+      statuses = this.get('statuses');
+      _ref = this.get('nodes').models;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        node = _ref[_i];
+        cnt = statuses[node.get('status')];
+        statuses[node.get('status')] = cnt + 1;
+      }
       render = {
-        nodes: this.get('nodes').toJSON()
+        nodes: this.get('nodes').toJSON(),
+        statuses: this.get('statuses')
       };
       return events.trigger("serverwidget:render", render);
     };
@@ -59,7 +71,8 @@
         this.get('nodes').add(new Sprinkler.ServerNode(data));
       }
       render = {
-        nodes: this.get('nodes').toJSON()
+        nodes: this.get('nodes').toJSON(),
+        statuses: this.get('statuses')
       };
       return events.trigger("serverwidget:render", render);
     };

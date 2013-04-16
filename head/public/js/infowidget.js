@@ -26,16 +26,18 @@
       render = {
         node: data.toJSON()
       };
+      events.trigger("getClientJobs", data.id);
       return events.trigger('infowidget:render', render);
     };
 
     InfoWidget.prototype.clientJobs = function(data) {
       var render;
+      console.log("raoar", data.jobs);
       this.get('node').set({
-        jobs: data
+        jobs: data.jobs
       });
       render = {
-        node: data.toJSON()
+        node: this.get('node').toJSON()
       };
       return events.trigger('infowidget:render', render);
     };
