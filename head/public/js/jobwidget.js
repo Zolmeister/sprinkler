@@ -127,8 +127,7 @@
       name = this.model.get('name');
       id = this.model.get('node').id;
       command = this.$el.find('#main-upload').val();
-      events.trigger('createJob', name, id, command);
-      return this.reset();
+      return events.trigger('createJob', name, id, command);
     };
 
     JobWidgetView.prototype.name = function(ev) {

@@ -60,7 +60,8 @@
         nodes: this.get('nodes').toJSON(),
         statuses: this.get('statuses')
       };
-      return events.trigger("serverwidget:render", render);
+      events.trigger("serverwidget:render", render);
+      return events.trigger("jobwidget:show", this.get('nodes').first());
     };
 
     ServersWidget.prototype.updateClient = function(data) {

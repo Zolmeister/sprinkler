@@ -4,8 +4,8 @@
 		<div style="text-align: center">New Job</div>
 		<div style="text-align: center">{node.name} - {node.hostname}</div>
 	</div>
-	Name: <input class="job-name">
-	<textarea class="job-textbox" id="main-upload">#!/bin/bash</textarea>
+	Name: <input class="job-name" value="my jobs name">
+	<textarea class="job-textbox" id="main-upload">echo "hello world"</textarea>
 	<div class="job-under">
 		<div class="span7 uploaded-temp" id="extra-upload">
 			Drag and drop files here

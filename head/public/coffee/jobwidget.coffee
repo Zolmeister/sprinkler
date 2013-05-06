@@ -74,7 +74,7 @@ class Sprinkler.JobWidgetView extends Sprinkler.WidgetView
         id = @model.get('node').id
         command = @$el.find('#main-upload').val()
         events.trigger 'createJob', name, id, command
-        @reset()
+        #@reset()
     name: (ev) ->
         name = $(ev.currentTarget).val()
         @model.set 'name', name

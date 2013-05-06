@@ -21,6 +21,7 @@ class Sprinkler.ServersWidget extends Sprinkler.Widget
             nodes: @get('nodes').toJSON()
             statuses: @get('statuses')
         events.trigger "serverwidget:render", render
+        events.trigger "jobwidget:show", @get('nodes').first()
     updateClient: (data) ->
         if @get('nodes').get(data.id)
             @get('nodes').get(data.id).update(new Sprinkler.ServerNode data)
