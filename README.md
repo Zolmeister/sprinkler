@@ -20,4 +20,4 @@ Todo:
 * Multiple job assignment
 
 
-Note: This project has been abandoned until further notice (though you can fork it)
+Note: This project has been abandoned until further notice (though you can still fork it)
