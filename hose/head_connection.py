@@ -6,9 +6,9 @@ class Connector:
     def __init__(self):
         self.context = zmq.Context()
         self.pull_sock = self.context.socket(zmq.PULL)
-        self.pull_sock.connect("tcp://127.0.0.1:5556")
+        self.pull_sock.bind("tcp://127.0.0.1:5556")
         self.push_sock = self.context.socket(zmq.PUSH)
-        self.push_sock.connect("tcp://127.0.0.1:5557")
+        self.push_sock.bind("tcp://127.0.0.1:5557")
         self.poller = zmq.Poller()
         self.poller.register(self.pull_sock, zmq.POLLIN)
         #self.thread_rep = threading.Thread(target=self.recieve)

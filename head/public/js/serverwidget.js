@@ -25,15 +25,21 @@
     }
 
     ServersWidget.prototype.defaults = {
-      nodes: new Sprinkler.ServerNodeCollection()
+      nodes: new Sprinkler.ServerNodeCollection(),
+      statuses: {
+        ready: 0,
+        running: 0,
+        error: 0
+      }
     };
 
     ServersWidget.prototype.initialize = function() {
-      return events.on("serverwidget:update", this.update.bind(this));
+      events.on("serverwidget:updateList", this.updateList.bind(this));
+      return events.on("serverwidget:updateClient", this.updateClient.bind(this));
     };
 
-    ServersWidget.prototype.update = function(data) {
-      var node, render;
+    ServersWidget.prototype.updateList = function(data) {
+      var cnt, node, render, statuses, _i, _len, _ref;
       this.get('nodes').update((function() {
         var _i, _len, _results;
         _results = [];
@@ -43,10 +49,31 @@
         }
         return _results;
       })());
-      console.log("got update");
-      console.log(this.get('nodes'));
+      statuses = this.get('statuses');
+      _ref = this.get('nodes').models;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        node = _ref[_i];
+        cnt = statuses[node.get('status')];
+        statuses[node.get('status')] = cnt + 1;
+      }
       render = {
-        nodes: this.get('nodes').toJSON()
+        nodes: this.get('nodes').toJSON(),
+        statuses: this.get('statuses')
+      };
+      events.trigger("serverwidget:render", render);
+      return events.trigger("jobwidget:show", this.get('nodes').first());
+    };
+
+    ServersWidget.prototype.updateClient = function(data) {
+      var render;
+      if (this.get('nodes').get(data.id)) {
+        this.get('nodes').get(data.id).update(new Sprinkler.ServerNode(data));
+      } else {
+        this.get('nodes').add(new Sprinkler.ServerNode(data));
+      }
+      render = {
+        nodes: this.get('nodes').toJSON(),
+        statuses: this.get('statuses')
       };
       return events.trigger("serverwidget:render", render);
     };
@@ -71,12 +98,8 @@
 
     ServersWidgetView.prototype.initialize = function(model, template, el) {
       ServersWidgetView.__super__.initialize.call(this, model, template, el);
-      _.bindAll(this, 'update', 'info', 'job', 'getModelFromEv', 'addClient');
-      return events.on("serverwidget:render", this.update);
-    };
-
-    ServersWidgetView.prototype.update = function(data) {
-      return this.render(data);
+      _.bindAll(this, 'info', 'job', 'getModelFromEv', 'addClient');
+      return events.on("serverwidget:render", this.render.bind(this));
     };
 
     ServersWidgetView.prototype.getModelFromEv = function(ev) {

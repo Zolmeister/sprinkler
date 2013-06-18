@@ -30,13 +30,41 @@
       return ClientWidgetView.__super__.constructor.apply(this, arguments);
     }
 
+    ClientWidgetView.prototype.events = {
+      'click .create': 'create',
+      'click .cancel': 'reset',
+      'click .close': 'reset',
+      'keypress input': 'filterOnEnter'
+    };
+
     ClientWidgetView.prototype.initialize = function(model, template, el) {
       ClientWidgetView.__super__.initialize.call(this, model, template, el);
+      _.bindAll(this, 'filterOnEnter', 'create');
       return events.on("clientwidget:render", this.update.bind(this));
     };
 
     ClientWidgetView.prototype.update = function() {
       return this.render();
+    };
+
+    ClientWidgetView.prototype.filterOnEnter = function(ev) {
+      if (ev.keyCode !== 13) {
+        return;
+      }
+      return this.create(ev);
+    };
+
+    ClientWidgetView.prototype.create = function(ev) {
+      var input, inputs, obj, _i, _len;
+      ev.preventDefault();
+      inputs = $(ev.currentTarget).parent().serializeArray();
+      obj = {};
+      for (_i = 0, _len = inputs.length; _i < _len; _i++) {
+        input = inputs[_i];
+        obj[input.name] = input.value;
+      }
+      events.trigger('createClient', obj['client-name'], obj['client-hostname'], obj.sshUser, obj.publicKey, obj.sshPassword, obj.rootPassword);
+      return this.reset();
     };
 
     return ClientWidgetView;

@@ -4,7 +4,9 @@ class Job:
     def __init__(self, db, spec):
         self.db = db
         self.jid = spec["_id"]
-        self.cmd = spec["cmd"]
+        self.cmd = spec["command"]["sh"]
+        self.clientId = spec["clientId"]
+        self.name = spec["name"]
         pass
 
     def json(self):

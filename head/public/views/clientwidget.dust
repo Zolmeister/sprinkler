@@ -3,10 +3,20 @@
 	<div class="title">
 		<div style="text-align: center">New Client</div>
 	</div>
-	Name:<br>
-    <input class="client-name"><br>
-    IP/Hostname:<br>
-    <input clas="client-hostname"><br>
-    default username? <br>
-    passwords?<br>
+    <form id='client-form'>
+        Name:<br>
+        <input name="client-name"><br>
+        IP/Hostname:<br>
+        <input name="client-hostname"><br>
+        ssh username:<br>
+        <input name="sshUser"><br>
+        ssh password:<br>
+        <input name="sshPassword" type="password"><br>
+        root password:<br>
+        <input name="rootPassword" type="password"><br>
+        public key:
+        <input name="publicKey" type="checkbox" style="width:auto"><br>
+        <button class="btn cancel">Cancel</button>
+        <button class="btn create">Create</button>
+    </form>
 </div>

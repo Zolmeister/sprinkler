@@ -26,10 +26,11 @@ while True:
     print cmd
 
     if "cmd" in cmd:
-        args = cmd.get("args", [])
-        proc = subprocess.Popen([cmd["cmd"]]+args, stdout=subprocess.PIPE)
+        commandString = cmd["cmd"].split(" ",1)
+        args = [commandString[1] if len(commandString)>0 else ""]
+        command = commandString[0]
+        proc = subprocess.Popen([command]+args, stdout=subprocess.PIPE)
         ret = proc.communicate()[0]
-
         ret_s = json.dumps({"retval": ret})
         s2.send(struct.pack("I", len(ret_s)))
         s2.send(ret_s)

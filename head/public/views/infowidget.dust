@@ -3,9 +3,14 @@
 	<div style="text-align: center">Info</div>
 	<div class="node-info">
 		name: {node.name}<br>
-		user: user<br>
-		ip: {node.hostname}<br>
+		hostname: {node.hostname}<br>
 		status: {node.status}<br>
-		last job: <br>
+        jobs: <br>
+        {#node.jobs}
+            <div class='jobName'>{.name}</div>
+            <textarea readonly class='jobCommand' data-id='{.id}'>
+                {.command.sh}
+            </textarea>
+        {/node.jobs}
 	</div>
 </div>
